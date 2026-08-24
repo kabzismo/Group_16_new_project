@@ -51,6 +51,17 @@ namespace FPSStarter
             if (roomCollider != null) roomCollider.isTrigger = true;
         }
 
+        private void Start()
+        {
+            // Trigger-enter is not raised when the player spawns inside a room.
+            // Register that case explicitly so every Stage 2 environment begins
+            // applying its mechanic immediately.
+            FirstPersonController player = FindFirstObjectByType<FirstPersonController>();
+            Collider roomCollider = GetComponent<Collider>();
+            if (player != null && roomCollider != null && roomCollider.bounds.Contains(player.transform.position))
+                player.EnterRoom(this);
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             FirstPersonController player = other.GetComponentInParent<FirstPersonController>();

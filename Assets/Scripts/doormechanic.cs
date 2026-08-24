@@ -1,60 +1,70 @@
-using UnityEngine;
 using FPSStarter;
+using UnityEngine;
 
 public class DoorOutward : MonoBehaviour, IInteractable
 {
     [Header("Door Settings")]
-    [SerializeField] private float openAngle = 90f;
-    [SerializeField] private float openSpeed = 120f;
     [SerializeField] private bool openOutward = true;
 
-    [Header("Hinge Pivot")]
-    [Tooltip("Assign the hinge point (vertical edge of the door) to rotate around. Leave empty to rotate around the door's own transform.")]
-    [SerializeField] private Transform hingePivot;
-
+    private Animator animator;
+    private string openParameter;
     private bool isOpen;
-    private float currentAngle;
-    private Vector3 initialPosition;
-    private Quaternion initialRotation;
+    private bool useAnimator;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
 
     public string Prompt => isOpen ? "[E] Close door" : "[E] Open door";
 
     private void Start()
     {
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInParent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>(true);
+
+        openParameter = ResolveOpenParameter();
+        useAnimator = animator != null && !string.IsNullOrEmpty(openParameter);
+        closedRotation = transform.localRotation;
+        openRotation = closedRotation * Quaternion.Euler(0f, openOutward ? 90f : -90f, 0f);
+
         MeshCollider meshCollider = GetComponent<MeshCollider>();
         if (meshCollider != null && meshCollider.sharedMesh == null)
         {
             MeshFilter filter = GetComponent<MeshFilter>();
             if (filter != null) meshCollider.sharedMesh = filter.sharedMesh;
         }
-
-        initialPosition = transform.position;
-        initialRotation = transform.rotation;
     }
 
     private void Update()
     {
-        float targetAngle = isOpen ? openAngle : 0f;
-        currentAngle = Mathf.MoveTowards(currentAngle, targetAngle, openSpeed * Time.deltaTime);
-        ApplyRotation();
+        if (useAnimator) return;
+        Quaternion target = isOpen ? openRotation : closedRotation;
+        transform.localRotation = Quaternion.RotateTowards(transform.localRotation, target, 180f * Time.deltaTime);
     }
 
-    private void ApplyRotation()
+    public void Interact() => Toggle();
+
+    public void Interact(GameObject interactor) => Toggle();
+
+    private void Toggle()
     {
-        float direction = openOutward ? 1f : -1f;
-        float appliedAngle = currentAngle * direction;
-
-        transform.position = initialPosition;
-        transform.rotation = initialRotation;
-
-        if (hingePivot != null)
-            transform.RotateAround(hingePivot.position, hingePivot.up, appliedAngle);
-        else
-            transform.Rotate(Vector3.up, appliedAngle, Space.Self);
+        isOpen = !isOpen;
+        if (useAnimator) animator.SetBool(openParameter, isOpen);
     }
 
-    public void Interact(GameObject interactor) => ToggleDoor();
-    public void ToggleDoor() => isOpen = !isOpen;
-    public void OpenDoor() => isOpen = true;
-    public void CloseDoor() => isOpen = false;
+    private string ResolveOpenParameter()
+    {
+        if (animator == null) return null;
+        if (HasBool(animator, "IsOpen")) return "IsOpen";
+        return null;
+    }
+
+    private static bool HasBool(Animator target, string parameterName)
+    {
+        foreach (AnimatorControllerParameter parameter in target.parameters)
+        {
+            if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)
+                return true;
+        }
+        return false;
+    }
 }

@@ -73,6 +73,7 @@ namespace FPSStarter
             if (!IsHeld) return;
             transform.SetParent(null, true);
             body.isKinematic = false;
+            body.useGravity = true;
             IsHeld = false;
         }
 
@@ -81,6 +82,7 @@ namespace FPSStarter
             if (!IsHeld) return;
             transform.SetParent(null, true);
             body.isKinematic = false;
+            body.useGravity = true;
             body.linearVelocity = direction.normalized * force;
             body.angularVelocity = UnityEngine.Random.insideUnitSphere * 8f;
             IsHeld = false;

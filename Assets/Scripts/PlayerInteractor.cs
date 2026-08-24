@@ -52,6 +52,19 @@ namespace FPSStarter
                 CurrentPrompt = "[E] Pick up " + carryable.ItemName;
                 if (interactPressed)
                 {
+                    // Stage 2 keys are collectibles, not physics objects the player
+                    // needs to carry around. Claim them immediately and remove them
+                    // from the room so they cannot be collected more than once.
+                    if (carryable.ItemId == "key")
+                    {
+                        Stage2KeyHunt hunt = FindFirstObjectByType<Stage2KeyHunt>();
+                        if (hunt != null)
+                        {
+                            if (hunt.Claim(carryable.gameObject)) Destroy(carryable.gameObject);
+                            return;
+                        }
+                    }
+
                     FirstPersonController controller = GetComponent<FirstPersonController>();
                     carryable.PickUp(controller != null ? controller.HoldPoint : transform);
                     heldObject = carryable;
