@@ -69,8 +69,10 @@ namespace FPSStarter
         {
             ResolveViewCamera();
             UpdateCursor();
-            if (!cursorLocked || view == null) return;
-            UpdateLook();
+
+            // Movement must not depend on a camera reference. This keeps WASD
+            // working even if the camera is assigned a frame later at startup.
+            if (cursorLocked && view != null) UpdateLook();
             UpdateMovement();
         }
 
@@ -100,7 +102,7 @@ namespace FPSStarter
             currentMechanic = selected != null ? selected.Mechanic : RoomMechanic.None;
             // Reset the controller immediately when leaving high gravity, even if
             // the cursor is unlocked and UpdateMovement is not currently running.
-            if (currentMechanic != RoomMechanic.HighGravity) ApplyHighGravityPosture(false, false);
+            if (currentMechanic != RoomMechanic.HighGravity) ApplyPosture(false, false);
         }
 
         private void ResolveViewCamera()
@@ -136,30 +138,26 @@ namespace FPSStarter
         private void UpdateMovement()
         {
             Keyboard keyboard = Keyboard.current;
-            Vector2 input = Gamepad.current != null ? Gamepad.current.leftStick.ReadValue() : Vector2.zero;
-            if (keyboard != null)
-            {
-                input = new Vector2(
-                    (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f),
-                    (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f));
-            }
-
+            Vector2 input = ReadMovementInput(keyboard);
             input = Vector2.ClampMagnitude(input, 1f);
-            bool crawl = currentMechanic == RoomMechanic.HighGravity && IsCrouchPressed(keyboard);
-            ApplyHighGravityPosture(currentMechanic == RoomMechanic.HighGravity, crawl);
+            bool crouching = IsCrouchPressed(keyboard);
+            ApplyPosture(currentMechanic == RoomMechanic.HighGravity, crouching);
 
             float roomGravityMultiplier = activeRoomVolume != null ? activeRoomVolume.GravityMultiplier : 1f;
             float roomSpeedMultiplier = activeRoomVolume != null ? activeRoomVolume.MovementSpeedMultiplier : 1f;
             float effectiveGravity = gravity * (currentMechanic == RoomMechanic.LowGravity ? lowGravityMultiplier : 1f) * roomGravityMultiplier;
             float effectiveJumpHeight = jumpHeight * (currentMechanic == RoomMechanic.LowGravity ? lowGravityJumpMultiplier : 1f);
-            if (controller.isGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
+            bool grounded = CheckGrounded();
+            if (grounded && verticalVelocity < 0f) verticalVelocity = -2f;
             bool jump = (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
-            if (controller.isGrounded && jump && !crawl) verticalVelocity = Mathf.Sqrt(effectiveJumpHeight * -2f * effectiveGravity);
+            if (grounded && jump && !crouching) verticalVelocity = Mathf.Sqrt(effectiveJumpHeight * -2f * effectiveGravity);
             verticalVelocity += effectiveGravity * Time.deltaTime;
 
             Vector3 direction = transform.right * input.x + transform.forward * input.y;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 1f) direction.Normalize();
             float speedMultiplier = currentMechanic == RoomMechanic.Ice ? iceSpeedMultiplier : currentMechanic == RoomMechanic.Hot ? hotSpeedMultiplier : 1f;
-            if (crawl) speedMultiplier *= crawlSpeedMultiplier;
+            if (crouching) speedMultiplier *= crawlSpeedMultiplier;
             Vector3 targetVelocity = direction * moveSpeed * speedMultiplier * roomSpeedMultiplier;
             if (currentMechanic == RoomMechanic.Ice)
                 horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, iceAcceleration * Time.deltaTime);
@@ -168,15 +166,41 @@ namespace FPSStarter
             controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
         }
 
+        private static Vector2 ReadMovementInput(Keyboard keyboard)
+        {
+            Vector2 keyboardInput = Vector2.zero;
+            if (keyboard != null)
+            {
+                keyboardInput.x = (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed ? 1f : 0f) -
+                                  (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed ? 1f : 0f);
+                keyboardInput.y = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed ? 1f : 0f) -
+                                  (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed ? 1f : 0f);
+            }
+
+            // Prefer keyboard when either WASD/arrow key is held, while still
+            // allowing a gamepad to work when the keyboard is idle.
+            if (keyboardInput.sqrMagnitude > 0f) return keyboardInput;
+            return Gamepad.current != null ? Gamepad.current.leftStick.ReadValue() : Vector2.zero;
+        }
+
+        private bool CheckGrounded()
+        {
+            if (controller.isGrounded) return true;
+            float radius = Mathf.Max(0.08f, controller.radius * 0.9f);
+            Vector3 origin = transform.TransformPoint(controller.center) + Vector3.down * (controller.height * 0.5f - radius);
+            return Physics.SphereCast(origin, radius, Vector3.down, out _, controller.skinWidth + 0.12f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
         private bool IsCrouchPressed(Keyboard keyboard)
         {
-            return (keyboard != null && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed)) ||
+            return (keyboard != null && (keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed)) ||
                    (Gamepad.current != null && Gamepad.current.leftStickButton.isPressed);
         }
 
-        private void ApplyHighGravityPosture(bool highGravity, bool crawling)
+        private void ApplyPosture(bool highGravity, bool crouching)
         {
-            float targetHeight = highGravity ? standingHeight * (crawling ? highGravityCrouchHeightMultiplier * 0.62f : highGravityCrouchHeightMultiplier) : standingHeight;
+            float targetHeight = highGravity ? standingHeight * highGravityCrouchHeightMultiplier : standingHeight;
+            if (crouching) targetHeight *= highGravity ? 0.62f : highGravityCrouchHeightMultiplier;
             float heightDifference = targetHeight - standingHeight;
             controller.height = targetHeight;
             controller.center = standingCenter + Vector3.up * (heightDifference * 0.5f);
