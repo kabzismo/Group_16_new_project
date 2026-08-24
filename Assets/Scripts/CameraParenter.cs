@@ -88,16 +88,17 @@ namespace FPSStarter
 
         private static void EnsureLevel2GroundCollider()
         {
-            if (SceneManager.GetActiveScene().name != "Level 2 grey scale") return;
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (sceneName != "Level 2 grey scale" && sceneName != "Stage 2") return;
             if (GameObject.Find("Level 2 FPS Ground") != null) return;
 
             // The visual ProBuilder floor is a 25 m square centred at
             // (-9, 2, 6). A simple box collider gives the FPS capsule a
             // dependable, solid surface without changing the scene's visuals.
             GameObject ground = new GameObject("Level 2 FPS Ground");
-            ground.transform.position = new Vector3(-9f, 1.9f, 6f);
+            ground.transform.position = new Vector3(10f, 1.9f, -4f);
             BoxCollider groundCollider = ground.AddComponent<BoxCollider>();
-            groundCollider.size = new Vector3(25f, 0.2f, 25f);
+            groundCollider.size = new Vector3(60f, 0.3f, 60f);
             Physics.SyncTransforms();
         }
 
@@ -123,7 +124,7 @@ namespace FPSStarter
             string sceneName = SceneManager.GetActiveScene().name;
             // The Level 2 floor is at y = 2. The controller root represents
             // the player's feet, so start just above that surface.
-            if (sceneName == "Level 2 grey scale") return new Vector3(-5f, 2.05f, 2.3f);
+            if (sceneName == "Level 2 grey scale" || sceneName == "Stage 2") return new Vector3(-5f, 2.05f, 2.3f);
             return new Vector3(0f, 1f, -7f);
         }
 
@@ -133,7 +134,7 @@ namespace FPSStarter
             if (marker != null) return marker.rotation;
 
             string sceneName = SceneManager.GetActiveScene().name;
-            if (sceneName == "Level 2 grey scale") return Quaternion.Euler(0f, -90f, 0f);
+            if (sceneName == "Level 2 grey scale" || sceneName == "Stage 2") return Quaternion.Euler(0f, -90f, 0f);
             return Quaternion.identity;
         }
 
