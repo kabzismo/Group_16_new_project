@@ -6,7 +6,7 @@ namespace FPSStarter
     public sealed class PlayerInteractor : MonoBehaviour
     {
         [SerializeField] private Camera playerCamera;
-        [SerializeField, Min(0.1f)] private float interactionDistance = 3f;
+        [SerializeField, Min(0.1f)] private float interactionDistance = 4.5f;
         [SerializeField] private LayerMask interactionMask = ~0;
         [SerializeField, Min(0.1f)] private float throwForce = 12f;
         [SerializeField, Min(0.01f)] private float holdRotationSensitivity = 0.25f;
