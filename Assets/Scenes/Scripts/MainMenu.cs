@@ -36,7 +36,8 @@ public class MainMenu : MonoBehaviour
 
     public void PlayGame()
     {
-        SceneManager.LoadScene("Main Scene Prototype");
+        TwoStageExit.ResetProgress();
+        SceneManager.LoadScene("Prison cell");
     }
 
     public void QuitGame()

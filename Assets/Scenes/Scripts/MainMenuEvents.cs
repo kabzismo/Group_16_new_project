@@ -1,31 +1,29 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 public class MainMenuEvents : MonoBehaviour
 {
     private UIDocument _document;
-
     private Button _button;
 
     private void Awake()
     {
         _document = GetComponent<UIDocument>();
+        if (_document == null) return;
 
-        _button = _document.rootVisualElement.Q<Button>("StartGameButton") as Button;
-       
-        _button.RegisterCallback<ClickEvent>(OnPlayGameClick);
+        _button = _document.rootVisualElement.Q<Button>("StartGameButton");
+        if (_button != null) _button.RegisterCallback<ClickEvent>(OnPlayGameClick);
     }
-    
+
     private void OnDisable()
     {
-        _button.UnregisterCallback<ClickEvent>(OnPlayGameClick);
+        if (_button != null) _button.UnregisterCallback<ClickEvent>(OnPlayGameClick);
     }
-
 
     private void OnPlayGameClick(ClickEvent evt)
     {
-        Debug.Log("You pressed the Play Game button!");
+        TwoStageExit.ResetProgress();
+        SceneManager.LoadScene("Prison cell");
     }
 }

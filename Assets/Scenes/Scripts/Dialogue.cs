@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using TMPro;
 using UnityEngine.UI;
 
@@ -19,35 +20,46 @@ public class Dialogue : MonoBehaviour
 
     void Start()
     {
-        textComponent.text = string.Empty;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
-        // Show character at the start
-        characterImage.gameObject.SetActive(true);
+        if (textComponent != null) textComponent.text = string.Empty;
+        if (characterImage != null) characterImage.gameObject.SetActive(true);
+        if (levelChoicePanel != null) levelChoicePanel.SetActive(false);
 
-        // Make sure level choice panel is hidden
-        levelChoicePanel.SetActive(false);
+        if (lines == null || lines.Length == 0)
+        {
+            ShowLevelChoice();
+            return;
+        }
 
         StartDialogue();
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (isTyping)
-            {
-                // Instantly finish the current line
-                StopAllCoroutines();
+        if (!AdvancePressed()) return;
 
-                textComponent.text = lines[index];
-                isTyping = false;
-            }
-            else
-            {
-                // Move to the next line
-                NextLine();
-            }
+        if (isTyping)
+        {
+            StopAllCoroutines();
+            if (textComponent != null) textComponent.text = lines[index];
+            isTyping = false;
         }
+        else
+        {
+            NextLine();
+        }
+    }
+
+    private static bool AdvancePressed()
+    {
+        bool mouse = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+        bool keyboard = Keyboard.current != null &&
+                        (Keyboard.current.spaceKey.wasPressedThisFrame ||
+                         Keyboard.current.enterKey.wasPressedThisFrame ||
+                         Keyboard.current.eKey.wasPressedThisFrame);
+        return mouse || keyboard;
     }
 
     void StartDialogue()
@@ -86,14 +98,14 @@ public class Dialogue : MonoBehaviour
         {
             // Dialogue is completely finished
 
-            // Hide the character
-            characterImage.gameObject.SetActive(false);
-
-            // Hide the dialogue panel
-            gameObject.SetActive(false);
-
-            // Show the level choice panel
-            levelChoicePanel.SetActive(true);
+            ShowLevelChoice();
         }
+    }
+
+    private void ShowLevelChoice()
+    {
+        if (characterImage != null) characterImage.gameObject.SetActive(false);
+        if (levelChoicePanel != null) levelChoicePanel.SetActive(true);
+        gameObject.SetActive(false);
     }
 }

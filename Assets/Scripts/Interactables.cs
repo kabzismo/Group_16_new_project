@@ -290,6 +290,47 @@ namespace FPSStarter
         }
     }
 
+    public sealed class RotatingStatue : MonoBehaviour, IInteractable
+    {
+        [SerializeField, Range(15f, 180f)] private float rotationStep = 90f;
+        [SerializeField] private float revealAngle = 180f;
+        [SerializeField, Min(1f)] private float angleTolerance = 8f;
+        [SerializeField] private GameObject hiddenKey;
+
+        private float startYaw;
+        private bool revealed;
+
+        public string Prompt => revealed ? "The statue is aligned" : "[E] Rotate statue";
+
+        private void Awake() => startYaw = transform.eulerAngles.y;
+
+        public void Configure(GameObject keyToReveal, float step = 90f)
+        {
+            hiddenKey = keyToReveal;
+            rotationStep = step;
+            if (hiddenKey == null) return;
+            hiddenKey.transform.SetParent(null, true);
+            hiddenKey.SetActive(false);
+        }
+
+        public void Interact(GameObject interactor)
+        {
+            if (revealed) return;
+            transform.Rotate(0f, rotationStep, 0f, Space.World);
+            float yawFromStart = Mathf.Abs(Mathf.DeltaAngle(startYaw, transform.eulerAngles.y));
+            if (Mathf.Abs(yawFromStart - revealAngle) > angleTolerance) return;
+            RevealKey();
+        }
+
+        private void RevealKey()
+        {
+            revealed = true;
+            if (hiddenKey == null) return;
+            hiddenKey.SetActive(true);
+            hiddenKey.transform.SetParent(null, true);
+        }
+    }
+
     public sealed class StatuePuzzle : MonoBehaviour
     {
         [Tooltip("Drag all StatuePart children here. Leave empty to auto-collect child StatueParts on Start.")]

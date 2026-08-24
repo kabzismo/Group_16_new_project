@@ -12,9 +12,10 @@ namespace FPSStarter
         private static void OnSceneLoaded()
         {
             string sceneName = SceneManager.GetActiveScene().name;
-            if (sceneName == "Main Menu" || sceneName == "PauseMenu" || sceneName == "LoadingScene") return;
+            if (sceneName == "MainMenu" || sceneName == "Main Menu" || sceneName == "PauseMenu" || sceneName == "LoadingScene") return;
 
             StripPlayerPhysicsConflicts();
+            PrepareStatuePuzzle(sceneName);
             PrepareKeys();
             RepairMeshColliders();
             if (IsStage2(sceneName))
@@ -97,13 +98,84 @@ namespace FPSStarter
             }
         }
 
+        private static void PrepareStatuePuzzle(string sceneName)
+        {
+            if (sceneName != "Stage 1") return;
+
+            GameObject statue = FindNamedObject("statue") ?? FindNamedObject("conductor");
+            if (statue == null) return;
+
+            EnsureInteractableCollider(statue);
+            RotatingStatue rotating = statue.GetComponent<RotatingStatue>();
+            if (rotating == null) rotating = statue.AddComponent<RotatingStatue>();
+
+            GameObject hiddenKey = FindNamedObject("Basic key torus (1)") ?? FindNamedObject("Torus (1)");
+            if (hiddenKey != null)
+            {
+                hiddenKey.name = "Basic key torus (1)";
+                hiddenKey.transform.SetParent(null, true);
+                MakePickup(hiddenKey);
+                rotating.Configure(hiddenKey);
+            }
+        }
+
+        private static GameObject FindNamedObject(string objectName)
+        {
+            Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (Transform transform in transforms)
+            {
+                if (string.Equals(transform.name, objectName, System.StringComparison.OrdinalIgnoreCase))
+                    return transform.gameObject;
+            }
+
+            foreach (Transform transform in transforms)
+            {
+                if (transform.name.IndexOf(objectName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return transform.gameObject;
+            }
+            return null;
+        }
+
+        private static void EnsureInteractableCollider(GameObject target)
+        {
+            foreach (Collider collider in target.GetComponentsInChildren<Collider>(true))
+            {
+                MeshCollider meshCollider = collider as MeshCollider;
+                if (meshCollider != null && meshCollider.sharedMesh == null)
+                {
+                    MeshFilter filter = meshCollider.GetComponent<MeshFilter>();
+                    if (filter != null) meshCollider.sharedMesh = filter.sharedMesh;
+                }
+                if (collider.enabled && (meshCollider == null || meshCollider.sharedMesh != null)) return;
+            }
+
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                target.AddComponent<BoxCollider>();
+                return;
+            }
+
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+            BoxCollider box = target.AddComponent<BoxCollider>();
+            box.center = target.transform.InverseTransformPoint(bounds.center);
+            Vector3 lossy = target.transform.lossyScale;
+            box.size = new Vector3(
+                SafeDivide(bounds.size.x, lossy.x),
+                SafeDivide(bounds.size.y, lossy.y),
+                SafeDivide(bounds.size.z, lossy.z));
+        }
+
+        private static float SafeDivide(float value, float scale) => Mathf.Abs(scale) < 0.0001f ? value : value / scale;
+
         private static void PrepareKeys()
         {
-            Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
+            Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (Transform root in transforms)
             {
-                if (root.parent != null) continue;
                 if (!IsKeyName(root.name)) continue;
+                if (root.parent != null && IsKeyName(root.parent.name)) continue;
                 MakePickup(root.gameObject);
             }
         }
@@ -111,7 +183,7 @@ namespace FPSStarter
         private static bool IsKeyName(string objectName)
         {
             string lower = objectName.ToLowerInvariant();
-            return lower.Contains("key") && !lower.Contains("keyboard");
+            return lower.Contains("key") && !lower.Contains("keyboard") && !lower.Contains("table");
         }
 
         private static void MakePickup(GameObject key)
@@ -122,7 +194,7 @@ namespace FPSStarter
                 else meshCollider.convex = true;
             }
 
-            MeshFilter filter = key.GetComponentInChildren<MeshFilter>();
+            MeshFilter filter = key.GetComponentInChildren<MeshFilter>(true);
             GameObject host = filter != null ? filter.gameObject : key;
             if (host.GetComponent<BoxCollider>() == null)
             {
@@ -132,21 +204,15 @@ namespace FPSStarter
 
             Rigidbody body = key.GetComponent<Rigidbody>();
             if (body == null) body = key.AddComponent<Rigidbody>();
-            body.isKinematic = true;
-            body.useGravity = false;
-            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            body.isKinematic = false;
+            body.useGravity = true;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
 
             CarryableObject carryable = key.GetComponent<CarryableObject>();
             if (carryable == null) carryable = key.AddComponent<CarryableObject>();
             string displayName = key.name.Replace("(1)", "").Trim();
             carryable.Configure(displayName, "key");
-
-            if (key.transform.position.y < 1.6f)
-            {
-                Vector3 position = key.transform.position;
-                position.y = 2.2f;
-                key.transform.position = position;
-            }
         }
 
         private static void RepairEmptyDoors()
