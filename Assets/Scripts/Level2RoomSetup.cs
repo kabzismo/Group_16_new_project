@@ -14,7 +14,8 @@ namespace FPSStarter
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBuild()
         {
-            if (SceneManager.GetActiveScene().name != "Level 2 grey scale") return;
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (sceneName != "Level 2 grey scale" && sceneName != "Stage 2") return;
             if (GameObject.Find(RootName) != null) return;
             if (Object.FindFirstObjectByType<Level2RoomSetup>() != null) return;
             new GameObject("Level 2 Room Setup").AddComponent<Level2RoomSetup>();
@@ -65,7 +66,6 @@ namespace FPSStarter
             GameObject hinge = new GameObject("Door");
             hinge.transform.SetParent(room, false);
             hinge.transform.position = hingePosition + new Vector3(0f, 0f, -0.48f);
-            hinge.AddComponent<DoorInteractable>();
 
             GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Cube);
             panel.name = "Door Panel";
@@ -73,6 +73,7 @@ namespace FPSStarter
             panel.transform.localPosition = new Vector3(0f, 0f, 0.48f);
             panel.transform.localScale = new Vector3(0.08f, 1.95f, 0.96f);
             VisualColor.Set(panel.GetComponent<Renderer>(), colour);
+            if (panel.GetComponent<DoorOutward>() == null) panel.AddComponent<DoorOutward>();
 
             GameObject handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
             handle.name = "Handle";
