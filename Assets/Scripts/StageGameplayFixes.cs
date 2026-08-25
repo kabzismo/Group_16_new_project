@@ -10,10 +10,16 @@ namespace FPSStarter
     /// </summary>
     public static class StageGameplayFixes
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void OnSceneLoaded()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoader()
         {
-            string sceneName = SceneManager.GetActiveScene().name;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
+        {
+            string sceneName = scene.name;
             if (sceneName == "Main Menu" || sceneName == "PauseMenu" || sceneName == "LoadingScene") return;
 
             Time.timeScale = 1f;
@@ -27,6 +33,7 @@ namespace FPSStarter
             if (IsStage2(sceneName))
             {
                 EnableStage2EnvironmentalRooms();
+                EnsureStage2DoorBootstrapper();
                 EnsureKeyHunt();
                 UnstickPlayer();
             }
@@ -96,6 +103,12 @@ namespace FPSStarter
             }
         }
 
+        private static void EnsureStage2DoorBootstrapper()
+        {
+            if (Object.FindFirstObjectByType<Stage2DoorBootstrapper>() != null) return;
+            new GameObject("Stage 2 Door Bootstrapper").AddComponent<Stage2DoorBootstrapper>();
+        }
+
         private static void RepairMeshColliders()
         {
             MeshCollider[] colliders = Object.FindObjectsByType<MeshCollider>(FindObjectsSortMode.None);
@@ -125,7 +138,7 @@ namespace FPSStarter
             }
         }
 
-        private static void PrepareAnimatedDoors()
+        internal static void PrepareAnimatedDoors()
         {
             Animator[] animators = Object.FindObjectsByType<Animator>(FindObjectsSortMode.None);
             foreach (Animator animator in animators)
@@ -135,6 +148,7 @@ namespace FPSStarter
                 GameObject door = animator.gameObject;
                 if (door.GetComponent<DoorOutward>() == null) door.AddComponent<DoorOutward>();
                 EnsureInteractableCollider(door);
+                EnsureBoxDoorCollider(door);
             }
 
             Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
@@ -167,16 +181,40 @@ namespace FPSStarter
                 return;
             }
 
-            if (door.GetComponent<Collider>() != null) return;
+            foreach (Collider collider in door.GetComponents<Collider>())
+            {
+                if (collider.enabled && (!(collider is MeshCollider meshCollider) || meshCollider.sharedMesh != null))
+                    return;
+            }
+
             Renderer renderer = door.GetComponent<Renderer>();
             if (renderer == null) renderer = door.GetComponentInChildren<Renderer>();
             if (renderer == null) return;
 
-            BoxCollider box = door.AddComponent<BoxCollider>();
+            BoxCollider box = door.GetComponent<BoxCollider>();
+            if (box == null) box = door.AddComponent<BoxCollider>();
+            box.enabled = true;
+            box.isTrigger = false;
             Bounds bounds = renderer.bounds;
             box.center = door.transform.InverseTransformPoint(bounds.center);
             Vector3 size = door.transform.InverseTransformVector(bounds.size);
             box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+        }
+
+        private static void EnsureBoxDoorCollider(GameObject door)
+        {
+            Renderer renderer = door.GetComponent<Renderer>();
+            if (renderer == null) return;
+
+            BoxCollider box = door.GetComponent<BoxCollider>();
+            if (box == null) box = door.AddComponent<BoxCollider>();
+            box.enabled = true;
+            box.isTrigger = false;
+
+            Bounds bounds = renderer.bounds;
+            box.center = door.transform.InverseTransformPoint(bounds.center);
+            Vector3 size = door.transform.InverseTransformVector(bounds.size);
+            box.size = new Vector3(Mathf.Max(0.05f, Mathf.Abs(size.x)), Mathf.Max(0.05f, Mathf.Abs(size.y)), Mathf.Max(0.05f, Mathf.Abs(size.z)));
         }
 
         private static bool HasBool(Animator animator, string parameterName)
@@ -214,34 +252,21 @@ namespace FPSStarter
                 else meshCollider.convex = true;
             }
 
-            // A number of the imported keys have an empty MeshCollider. An enabled
-            // BoxCollider on the key root guarantees that the interaction ray can
-            // always hit the collectible.
-            Collider[] colliders = key.GetComponentsInChildren<Collider>(true);
-            bool hasWorkingCollider = false;
-            foreach (Collider collider in colliders)
-            {
-                if (collider.enabled && !(collider is MeshCollider mesh && mesh.sharedMesh == null))
-                {
-                    hasWorkingCollider = true;
-                    break;
-                }
-            }
+            // The root is the object carrying CarryableObject, so it must always
+            // own a real collider for PlayerInteractor's ray to resolve the key.
+            // Imported child MeshColliders are not relied on here.
+            BoxCollider interactionCollider = key.GetComponent<BoxCollider>();
+            if (interactionCollider == null) interactionCollider = key.AddComponent<BoxCollider>();
+            interactionCollider.enabled = true;
+            interactionCollider.isTrigger = false;
 
-            if (!hasWorkingCollider)
+            Renderer pickupRenderer = key.GetComponentInChildren<Renderer>();
+            if (pickupRenderer != null)
             {
-                BoxCollider box = key.GetComponent<BoxCollider>();
-                if (box == null) box = key.AddComponent<BoxCollider>();
-                box.isTrigger = false;
-
-                Renderer pickupRenderer = key.GetComponentInChildren<Renderer>();
-                if (pickupRenderer != null)
-                {
-                    Bounds pickupBounds = pickupRenderer.bounds;
-                    box.center = key.transform.InverseTransformPoint(pickupBounds.center);
-                    Vector3 size = key.transform.InverseTransformVector(pickupBounds.size);
-                    box.size = new Vector3(Mathf.Max(0.08f, Mathf.Abs(size.x)), Mathf.Max(0.08f, Mathf.Abs(size.y)), Mathf.Max(0.08f, Mathf.Abs(size.z)));
-                }
+                Bounds pickupBounds = pickupRenderer.bounds;
+                interactionCollider.center = key.transform.InverseTransformPoint(pickupBounds.center);
+                Vector3 size = key.transform.InverseTransformVector(pickupBounds.size);
+                interactionCollider.size = new Vector3(Mathf.Max(0.15f, Mathf.Abs(size.x)), Mathf.Max(0.15f, Mathf.Abs(size.y)), Mathf.Max(0.15f, Mathf.Abs(size.z)));
             }
 
             Rigidbody body = key.GetComponent<Rigidbody>();
@@ -252,6 +277,7 @@ namespace FPSStarter
 
             CarryableObject carryable = key.GetComponent<CarryableObject>();
             if (carryable == null) carryable = key.AddComponent<CarryableObject>();
+            if (key.GetComponent<SimpleInteractable>() == null) key.AddComponent<SimpleInteractable>();
             string displayName = key.name.Replace("(1)", "").Trim();
             carryable.Configure(displayName, "key");
 
@@ -269,6 +295,23 @@ namespace FPSStarter
         {
             if (Object.FindFirstObjectByType<Stage2KeyHunt>() != null) return;
             new GameObject("Stage 2 Key Hunt").AddComponent<Stage2KeyHunt>();
+        }
+    }
+
+    /// <summary>Re-applies animated-door setup after a scene transition has fully initialized its objects.</summary>
+    public sealed class Stage2DoorBootstrapper : MonoBehaviour
+    {
+        private IEnumerator Start()
+        {
+            // Runtime-initialization callback order differs when entering from the
+            // menu, so run after two frames as well as immediately on scene load.
+            yield return null;
+            StageGameplayFixes.PrepareAnimatedDoors();
+            Physics.SyncTransforms();
+
+            yield return null;
+            StageGameplayFixes.PrepareAnimatedDoors();
+            Physics.SyncTransforms();
         }
     }
 

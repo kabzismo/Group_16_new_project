@@ -15,7 +15,7 @@ public class DoorOutward : MonoBehaviour, IInteractable
 
     public string Prompt => isOpen ? "[E] Close door" : "[E] Open door";
 
-    private void Start()
+    private void Awake()
     {
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInParent<Animator>();

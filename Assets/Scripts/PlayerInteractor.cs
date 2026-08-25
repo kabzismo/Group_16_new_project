@@ -17,18 +17,22 @@ namespace FPSStarter
 
         private void Awake()
         {
-            if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>();
+            if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>(true);
+            if (playerCamera == null) playerCamera = Camera.main;
         }
 
         private void Update()
         {
             CurrentPrompt = string.Empty;
-            if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>();
+            if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>(true);
+            if (playerCamera == null) playerCamera = Camera.main;
             if (playerCamera == null) return;
             bool interactPressed = (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) ||
                                    (Gamepad.current != null && Gamepad.current.buttonNorth.wasPressedThisFrame);
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactionMask, QueryTriggerInteraction.Collide);
+            // Room-mechanic volumes are triggers. Ignoring them ensures the ray
+            // reaches the solid collider on a door, key, or other interactable.
+            bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactionMask, QueryTriggerInteraction.Ignore);
 
             if (heldObject != null)
             {
