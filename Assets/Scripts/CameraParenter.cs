@@ -8,24 +8,56 @@ namespace FPSStarter
     {
         private static readonly string[] SkipScenes = { "Main Menu", "PauseMenu", "LoadingScene" };
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void OnSceneLoaded()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoader()
         {
-            string sceneName = SceneManager.GetActiveScene().name;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private static void OnSceneLoaded(Scene activeScene, LoadSceneMode loadMode)
+        {
+            string sceneName = activeScene.name;
             foreach (string skip in SkipScenes)
                 if (sceneName == skip) return;
 
-         
-            FirstPersonController existingController = Object.FindFirstObjectByType<FirstPersonController>();
-            if (existingController != null)
+            // A player must belong to the scene it is playing in. Remove any
+            // persistent controller left over from a previous scene, then use (or
+            // build) this scene's own Player object.
+            FirstPersonController[] controllers = Object.FindObjectsByType<FirstPersonController>(FindObjectsSortMode.None);
+            foreach (FirstPersonController controller in controllers)
             {
-                if (existingController.GetComponent<Camera>() == null) return;
-                existingController.gameObject.SetActive(false);
+                if (controller.gameObject.scene != activeScene)
+                    Object.Destroy(controller.gameObject);
             }
-            
-            if (GameObject.FindWithTag("Player") != null) return;
+
+            GameObject scenePlayer = FindPlayerInScene(activeScene);
+            if (scenePlayer != null)
+            {
+                ConfigureExistingPlayer(scenePlayer);
+                return;
+            }
 
             Build();
+        }
+
+        private static GameObject FindPlayerInScene(Scene scene)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                if (root.CompareTag("Player")) return root;
+                Transform nestedPlayer = root.transform.Find("Player");
+                if (nestedPlayer != null && nestedPlayer.CompareTag("Player")) return nestedPlayer.gameObject;
+            }
+            return null;
+        }
+
+        private static void ConfigureExistingPlayer(GameObject player)
+        {
+            if (player.GetComponent<CharacterController>() == null) player.AddComponent<CharacterController>();
+            if (player.GetComponent<FirstPersonController>() == null) player.AddComponent<FirstPersonController>();
+            if (player.GetComponent<PlayerInteractor>() == null) player.AddComponent<PlayerInteractor>();
+            if (player.GetComponent<InteractionUI>() == null) player.AddComponent<InteractionUI>();
         }
 
         private static void Build()
