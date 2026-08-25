@@ -8,13 +8,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MainMenu.unity
     guid: cb60b94cc1352384e82a88e36f6b57fa
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Prison cell.unity
     guid: b4a688d892719874aa1d24c9463b6575
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Stage 1.unity
     guid: 435b180745388a242850a628b801a679
   - enabled: 1
