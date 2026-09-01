@@ -3,22 +3,7 @@ using UnityEngine.UIElements;
 
 namespace FPSStarter
 {
-    /// <summary>
-    /// Reads the interaction prompt from PlayerInteractor every frame and
-    /// displays it as a centred label using UI Toolkit.
-    ///
-    /// Setup:
-    ///   1. Attach this component to any GameObject in the scene (e.g. the
-    ///      player or a dedicated HUD object).
-    ///   2. Assign the UIDocument that contains your HUD panel, or leave it
-    ///      blank to auto-find the first UIDocument in the scene.
-    ///   3. Assign the PlayerInteractor, or leave blank to auto-find it.
-    ///   4. In your UXML file add a Label with name="InteractionPrompt".
-    ///      The label will be shown/hidden and its text updated automatically.
-    ///
-    /// If no UIDocument is available the prompt will be drawn using OnGUI
-    /// as a fallback so the feature is always visible during development.
-    /// </summary>
+
     public sealed class InteractionUI : MonoBehaviour
     {
         [Tooltip("The UIDocument that owns the HUD. Auto-found if blank.")]
