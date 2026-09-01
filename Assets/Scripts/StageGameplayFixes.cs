@@ -28,6 +28,7 @@ namespace FPSStarter
             RemoveBlockingGroundPlanes();
             RepairMeshColliders();
             PrepareAnimatedDoors();
+            PrepareChests();
             PrepareKeys();
 
             if (IsStage2(sceneName))
@@ -219,10 +220,32 @@ namespace FPSStarter
 
         private static bool HasBool(Animator animator, string parameterName)
         {
+            if (animator == null || animator.runtimeAnimatorController == null) return false;
             foreach (AnimatorControllerParameter parameter in animator.parameters)
             {
                 if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)
                     return true;
+            }
+            return false;
+        }
+
+        private static void PrepareChests()
+        {
+            Animator[] animators = Object.FindObjectsByType<Animator>(FindObjectsSortMode.None);
+            foreach (Animator animator in animators)
+            {
+                if (!IsChestLid(animator.transform)) continue;
+                if (animator.GetComponent<ChestInteractable>() == null)
+                    animator.gameObject.AddComponent<ChestInteractable>();
+            }
+        }
+
+        private static bool IsChestLid(Transform candidate)
+        {
+            if (candidate == null || !candidate.name.ToLowerInvariant().Contains("lid")) return false;
+            for (Transform parent = candidate.parent; parent != null; parent = parent.parent)
+            {
+                if (parent.name.ToLowerInvariant().Contains("chest")) return true;
             }
             return false;
         }
@@ -299,7 +322,7 @@ namespace FPSStarter
     }
 
     /// <summary>Re-applies animated-door setup after a scene transition has fully initialized its objects.</summary>
-    public sealed class Stage2DoorBootstrapper : MonoBehaviour
+    internal sealed class LegacyStage2DoorBootstrapper : MonoBehaviour
     {
         private IEnumerator Start()
         {
@@ -315,7 +338,7 @@ namespace FPSStarter
         }
     }
 
-    public sealed class Stage2KeyHunt : MonoBehaviour
+    internal sealed class LegacyStage2KeyHunt : MonoBehaviour
     {
         public const int RequiredKeys = 3;
         private readonly HashSet<int> claimed = new HashSet<int>();
@@ -360,7 +383,7 @@ namespace FPSStarter
         }
     }
 
-    public sealed class Stage2CompletionScreen : MonoBehaviour
+    internal sealed class LegacyStage2CompletionScreen : MonoBehaviour
     {
         private bool visible;
         private GUIStyle titleStyle;

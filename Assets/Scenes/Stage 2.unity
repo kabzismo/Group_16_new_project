@@ -3015,6 +3015,9 @@ GameObject:
   m_Component:
   - component: {fileID: 543450653339758427}
   - component: {fileID: 919132149422323170}
+  - component: {fileID: 919132149422323173}
+  - component: {fileID: 919132149422323172}
+  - component: {fileID: 919132149422323171}
   m_Layer: 0
   m_Name: Basic key
   m_TagString: Untagged
@@ -3044,6 +3047,61 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &919132149422323171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149422323169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82f15f75846d3043ab96b7129d3ae78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleInteractable
+--- !u!114 &919132149422323172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149422323169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce64b64715e14324c95dcc8ed159126e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.CarryableObject
+  itemName: stone relic
+  itemId: relic
+  minimumHoldDistance: 0.5
+  maximumHoldDistance: 2.5
+--- !u!54 &919132149422323173
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149422323169}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &919132149440186987
 GameObject:
   m_ObjectHideFlags: 0
@@ -3054,6 +3112,9 @@ GameObject:
   m_Component:
   - component: {fileID: 543450653447835857}
   - component: {fileID: 919132149440186988}
+  - component: {fileID: 919132149440186991}
+  - component: {fileID: 919132149440186990}
+  - component: {fileID: 919132149440186989}
   m_Layer: 0
   m_Name: Basic key (1)
   m_TagString: Untagged
@@ -3083,6 +3144,61 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &919132149440186989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149440186987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82f15f75846d3043ab96b7129d3ae78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleInteractable
+--- !u!114 &919132149440186990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149440186987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce64b64715e14324c95dcc8ed159126e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.CarryableObject
+  itemName: stone relic
+  itemId: relic
+  minimumHoldDistance: 0.5
+  maximumHoldDistance: 2.5
+--- !u!54 &919132149440186991
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149440186987}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!4 &1027680283761187888
 Transform:
   m_ObjectHideFlags: 0
@@ -5688,7 +5804,7 @@ Transform:
   m_GameObject: {fileID: 8832103716015554341}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.17117867, y: 0.17117867, z: 0.17117867}
   m_ConstrainProportionsScale: 0
   m_Children: []
