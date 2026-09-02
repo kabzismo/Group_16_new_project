@@ -60,6 +60,7 @@ public class DoorOutward : MonoBehaviour, IInteractable
 
     private static bool HasBool(Animator target, string parameterName)
     {
+        if (target == null || target.runtimeAnimatorController == null) return false;
         foreach (AnimatorControllerParameter parameter in target.parameters)
         {
             if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)

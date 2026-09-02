@@ -129,7 +129,7 @@ Animator:
   m_GameObject: {fileID: 4506677310311507615}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 45f84429e7cda714685cca405cbaf971, type: 2}
+  m_Controller: {fileID: 9100000, guid: 5b366ad83af2b5b4494bc31d2c737b19, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -141,18 +141,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &45146169
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1129300955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &130449340
 RectTransform:
   m_ObjectHideFlags: 0
@@ -759,7 +747,6 @@ GameObject:
   - component: {fileID: 1129300960}
   - component: {fileID: 1129300957}
   - component: {fileID: 1129300959}
-  - component: {fileID: 45146169}
   m_Layer: 0
   m_Name: Torus (1)
   m_TagString: Untagged
@@ -1108,6 +1095,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6645823806324085556}
+  - {fileID: 543450652204342763}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &543450652067383893
@@ -1169,12 +1157,12 @@ Transform:
   m_GameObject: {fileID: 919132148536461137}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0025687488, y: -0.0006316472, z: -0.040622674, w: 0.9991711}
-  m_LocalPosition: {x: 7.97, y: -0.15, z: 2.13}
+  m_LocalPosition: {x: 1.782, y: 0.056, z: -1.742}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5197901907790389317}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 543450652017323758}
   m_LocalEulerAnglesHint: {x: 0.291, y: -0.084, z: -4.657}
 --- !u!4 &543450652437910873
 Transform:
@@ -1416,6 +1404,8 @@ GameObject:
   m_Component:
   - component: {fileID: 543450652204342763}
   - component: {fileID: 919132148536461138}
+  - component: {fileID: 919132148536461140}
+  - component: {fileID: 919132148536461139}
   m_Layer: 0
   m_Name: Basic key
   m_TagString: Untagged
@@ -1445,6 +1435,39 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!65 &919132148536461139
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148536461137}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &919132148536461140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148536461137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82f15f75846d3043ab96b7129d3ae78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleInteractable
 --- !u!1 &919132148548660388
 GameObject:
   m_ObjectHideFlags: 0
@@ -3618,9 +3641,9 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -8803937527578110353, guid: 7fc6c28d014a9624abf28338f449430a, type: 3}
 --- !u!1 &8832103717925528993
@@ -3779,7 +3802,6 @@ SceneRoots:
   - {fileID: 1129300960}
   - {fileID: 543450653692404260}
   - {fileID: 543450652017323758}
-  - {fileID: 543450652204342763}
   - {fileID: 543450652140977885}
   - {fileID: 543450652199761438}
   - {fileID: 543450652067383893}
