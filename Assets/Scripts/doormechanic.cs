@@ -15,7 +15,7 @@ public class DoorOutward : MonoBehaviour, IInteractable
 
     public string Prompt => isOpen ? "[E] Close door" : "[E] Open door";
 
-    private void Start()
+    private void Awake()
     {
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInParent<Animator>();
@@ -60,6 +60,7 @@ public class DoorOutward : MonoBehaviour, IInteractable
 
     private static bool HasBool(Animator target, string parameterName)
     {
+        if (target == null || target.runtimeAnimatorController == null) return false;
         foreach (AnimatorControllerParameter parameter in target.parameters)
         {
             if (parameter.type == AnimatorControllerParameterType.Bool && parameter.name == parameterName)
