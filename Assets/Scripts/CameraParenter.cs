@@ -8,7 +8,7 @@ namespace FPSStarter
     {
         private static readonly string[] SkipScenes = { "Main Menu", "PauseMenu", "LoadingScene" };
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+       // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void RegisterSceneLoader()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
