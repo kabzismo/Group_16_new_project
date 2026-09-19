@@ -33,6 +33,9 @@ namespace FPSStarter
 
             if (IsStage2(sceneName))
             {
+                ConfigureStage2KeyDoorLocks();
+                EnsureGroundHazard();
+                EnsureStage2SafetyFloor();
                 EnableStage2EnvironmentalRooms();
                 EnsureStage2DoorBootstrapper();
                 EnsureKeyHunt();
@@ -110,6 +113,26 @@ namespace FPSStarter
             new GameObject("Stage 2 Door Bootstrapper").AddComponent<Stage2DoorBootstrapper>();
         }
 
+        private static void EnsureGroundHazard()
+        {
+            FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
+            if (player != null && player.GetComponent<GroundHazardRespawn>() == null)
+                player.gameObject.AddComponent<GroundHazardRespawn>();
+        }
+
+        private static void EnsureStage2SafetyFloor()
+        {
+            if (GameObject.Find("Stage 2 Safety Floor") != null) return;
+
+            // The imported level meshes do not reliably retain their collision
+            // data. Keep a thin, invisible floor exactly at the player's normal
+            // standing height so the player cannot fall through the stage.
+            GameObject floor = new GameObject("Stage 2 Safety Floor");
+            floor.transform.position = new Vector3(12f, 0.85f, -6f);
+            BoxCollider collider = floor.AddComponent<BoxCollider>();
+            collider.size = new Vector3(60f, 0.1f, 40f);
+        }
+
         private static void RepairMeshColliders()
         {
             MeshCollider[] colliders = Object.FindObjectsByType<MeshCollider>(FindObjectsSortMode.None);
@@ -147,7 +170,8 @@ namespace FPSStarter
                 if (!HasBool(animator, "IsOpen")) continue;
 
                 GameObject door = animator.gameObject;
-                if (door.GetComponent<DoorOutward>() == null) door.AddComponent<DoorOutward>();
+                DoorOutward doorController = door.GetComponentInParent<DoorOutward>();
+                if (doorController == null) doorController = CreateHingedAnimatedDoor(animator);
                 EnsureInteractableCollider(door);
                 EnsureBoxDoorCollider(door);
             }
@@ -161,6 +185,76 @@ namespace FPSStarter
                     transform.gameObject.AddComponent<DoorOutward>();
                 EnsureInteractableCollider(transform.gameObject);
             }
+        }
+
+        private static DoorOutward CreateHingedAnimatedDoor(Animator animator)
+        {
+            GameObject panel = animator.gameObject;
+            string doorName = panel.name;
+            Renderer renderer = panel.GetComponent<Renderer>();
+            if (renderer == null) renderer = panel.GetComponentInChildren<Renderer>();
+            if (renderer == null) return panel.AddComponent<DoorOutward>();
+
+            // These imported doors are upright after their local X rotation, so
+            // their width runs along world X. Put the pivot at its left edge and
+            // rotate the new parent about world Y for a physical hinge swing.
+            Bounds bounds = renderer.bounds;
+            GameObject hinge = new GameObject(doorName);
+            hinge.transform.SetPositionAndRotation(
+                new Vector3(bounds.min.x, bounds.center.y, bounds.center.z),
+                Quaternion.identity);
+            hinge.transform.SetParent(panel.transform.parent, true);
+
+            animator.enabled = false;
+            panel.name = doorName + " Panel";
+            panel.transform.SetParent(hinge.transform, true);
+            return hinge.AddComponent<DoorOutward>();
+        }
+
+        internal static void ConfigureStage2KeyDoorLocks()
+        {
+            string[] doorNames = { "door.002", "door.003", "door.004" };
+            List<CarryableObject> availableKeys = new List<CarryableObject>();
+            foreach (CarryableObject key in Object.FindObjectsByType<CarryableObject>(FindObjectsSortMode.None))
+            {
+                if (key.IsStage2Key) availableKeys.Add(key);
+            }
+
+            for (int index = 0; index < doorNames.Length; index++)
+            {
+                DoorOutward door = FindDoor(doorNames[index]);
+                if (door == null || availableKeys.Count == 0) continue;
+
+                CarryableObject closestKey = FindClosestKey(door.transform.position, availableKeys);
+                string keyId = "stage2-key-door-" + (index + 2);
+                closestKey.SetItemId(keyId);
+                door.RequireKey(keyId);
+                availableKeys.Remove(closestKey);
+            }
+        }
+
+        private static DoorOutward FindDoor(string objectName)
+        {
+            foreach (DoorOutward door in Object.FindObjectsByType<DoorOutward>(FindObjectsSortMode.None))
+            {
+                if (string.Equals(door.name, objectName, System.StringComparison.OrdinalIgnoreCase))
+                    return door;
+            }
+            return null;
+        }
+
+        private static CarryableObject FindClosestKey(Vector3 position, List<CarryableObject> keys)
+        {
+            CarryableObject closest = keys[0];
+            float closestDistance = (closest.transform.position - position).sqrMagnitude;
+            for (int index = 1; index < keys.Count; index++)
+            {
+                float distance = (keys[index].transform.position - position).sqrMagnitude;
+                if (distance >= closestDistance) continue;
+                closest = keys[index];
+                closestDistance = distance;
+            }
+            return closest;
         }
 
         private static bool IsDoorName(string objectName)
