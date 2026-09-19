@@ -228,7 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.30817598, g: 0.23355474, b: 0.27022117, a: 0.7411765}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1176,7 +1176,7 @@ MonoBehaviour:
   lines:
   - Hello there my little slave
   - Well how are you liking your new home
-  - Great isn't it
+  - Great isn't it ?
   - Well now then let me cut to the chase
   - To get out of here alive you will be playing a little game for my entertainment
   - if you win then you are free and if you fail, you will be my slave
