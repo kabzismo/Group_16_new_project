@@ -17,6 +17,7 @@ namespace FPSStarter
         public bool IsPlaced { get; private set; }
         public string ItemName => itemName;
         public string ItemId => itemId;
+        public bool IsStage2Key => itemId == "key" || itemId.StartsWith("stage2-key-");
 
         private void Awake()
         {
@@ -28,6 +29,11 @@ namespace FPSStarter
             itemName = displayName;
             itemId = identifier;
             gameObject.name = displayName;
+        }
+
+        public void SetItemId(string identifier)
+        {
+            itemId = identifier;
         }
 
         public void PickUp(Transform target)
