@@ -9,14 +9,20 @@ namespace FPSStarter
         public const int RequiredKeys = 3;
 
         private readonly HashSet<int> claimed = new HashSet<int>();
+        private readonly HashSet<string> claimedKeyIds = new HashSet<string>();
         private bool ending;
 
         public int ClaimedCount => claimed.Count;
+
+        public bool HasCollected(string keyId) => claimedKeyIds.Contains(keyId);
 
         public bool Claim(GameObject key)
         {
             if (ending || key == null) return false;
             if (!claimed.Add(key.GetInstanceID())) return false;
+
+            CarryableObject carryable = key.GetComponent<CarryableObject>();
+            if (carryable != null) claimedKeyIds.Add(carryable.ItemId);
 
             GameSession.CollectedItems = claimed.Count;
 

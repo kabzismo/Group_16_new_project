@@ -48,6 +48,24 @@ namespace FPSStarter
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
 
+        public void RespawnAt(Vector3 position, Quaternion rotation, RoomMechanicVolume room)
+        {
+            if (controller == null) controller = GetComponent<CharacterController>();
+            if (controller == null) return;
+
+            controller.enabled = false;
+            transform.SetPositionAndRotation(position, rotation);
+            verticalVelocity = 0f;
+            horizontalVelocity = Vector3.zero;
+            activeRoomVolumes.Clear();
+            activeRoomVolume = null;
+            currentMechanic = RoomMechanic.None;
+            controller.enabled = true;
+
+            if (room != null) EnterRoom(room);
+            else ApplyPosture(false, false);
+        }
+
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
