@@ -10,9 +10,16 @@ public class ButtonHoverEffect : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private Vector3 originalScale;
     private Vector3 targetScale;
 
-    void Start()
+    void Awake()
     {
         originalScale = transform.localScale;
+        targetScale = originalScale;
+    }
+
+    void OnEnable()
+    {
+
+        transform.localScale = originalScale;
         targetScale = originalScale;
     }
 
