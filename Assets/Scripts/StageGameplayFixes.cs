@@ -34,7 +34,7 @@ namespace FPSStarter
             if (IsStage2(sceneName))
             {
                 ConfigureStage2KeyDoorLocks();
-                EnsureGroundHazard();
+                EnsureHotFloorHazard();
                 EnsureStage2SafetyFloor();
                 EnableStage2EnvironmentalRooms();
                 EnsureStage2DoorBootstrapper();
@@ -107,17 +107,19 @@ namespace FPSStarter
             }
         }
 
+        private static void EnsureHotFloorHazard()
+        {
+            FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
+            if (player == null) return;
+
+            if (player.GetComponent<GroundHazardRespawn>() == null)
+                player.gameObject.AddComponent<GroundHazardRespawn>();
+        }
+
         private static void EnsureStage2DoorBootstrapper()
         {
             if (Object.FindFirstObjectByType<Stage2DoorBootstrapper>() != null) return;
             new GameObject("Stage 2 Door Bootstrapper").AddComponent<Stage2DoorBootstrapper>();
-        }
-
-        private static void EnsureGroundHazard()
-        {
-            FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
-            if (player != null && player.GetComponent<GroundHazardRespawn>() == null)
-                player.gameObject.AddComponent<GroundHazardRespawn>();
         }
 
         private static void EnsureStage2SafetyFloor()
@@ -164,49 +166,41 @@ namespace FPSStarter
 
         internal static void PrepareAnimatedDoors()
         {
-            Animator[] animators = Object.FindObjectsByType<Animator>(FindObjectsSortMode.None);
-            foreach (Animator animator in animators)
-            {
-                if (!HasBool(animator, "IsOpen")) continue;
-
-                GameObject door = animator.gameObject;
-                DoorOutward doorController = door.GetComponentInParent<DoorOutward>();
-                if (doorController == null) doorController = CreateHingedAnimatedDoor(animator);
-                EnsureInteractableCollider(door);
-                EnsureBoxDoorCollider(door);
-            }
-
             Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
             foreach (Transform transform in transforms)
             {
                 if (!IsDoorName(transform.name)) continue;
                 if (transform.GetComponent<Animator>() == null && transform.GetComponentInChildren<MeshFilter>() == null) continue;
-                if (transform.GetComponent<DoorOutward>() == null && transform.GetComponentInParent<DoorOutward>() == null)
-                    transform.gameObject.AddComponent<DoorOutward>();
+                if (transform.GetComponentInParent<DoorOutward>() != null) continue;
+
+                DoorOutward door = CreateConventionalHingedDoor(transform.gameObject);
+                if (door == null) continue;
                 EnsureInteractableCollider(transform.gameObject);
+                EnsureBoxDoorCollider(transform.gameObject);
             }
         }
 
-        private static DoorOutward CreateHingedAnimatedDoor(Animator animator)
+        private static DoorOutward CreateConventionalHingedDoor(GameObject panel)
         {
-            GameObject panel = animator.gameObject;
-            string doorName = panel.name;
             Renderer renderer = panel.GetComponent<Renderer>();
-            if (renderer == null) renderer = panel.GetComponentInChildren<Renderer>();
-            if (renderer == null) return panel.AddComponent<DoorOutward>();
+            if (renderer == null) return null;
 
-            // These imported doors are upright after their local X rotation, so
-            // their width runs along world X. Put the pivot at its left edge and
-            // rotate the new parent about world Y for a physical hinge swing.
+            // Put the pivot on the left edge of the widest horizontal side, so
+            // the panel swings around a vertical edge like a conventional door.
             Bounds bounds = renderer.bounds;
-            GameObject hinge = new GameObject(doorName);
-            hinge.transform.SetPositionAndRotation(
-                new Vector3(bounds.min.x, bounds.center.y, bounds.center.z),
-                Quaternion.identity);
-            hinge.transform.SetParent(panel.transform.parent, true);
+            bool widthRunsAlongX = bounds.size.x >= bounds.size.z;
+            Vector3 hingePosition = bounds.center;
+            if (widthRunsAlongX) hingePosition.x = bounds.min.x;
+            else hingePosition.z = bounds.min.z;
 
-            animator.enabled = false;
-            panel.name = doorName + " Panel";
+            GameObject hinge = new GameObject(panel.name);
+            hinge.layer = panel.layer;
+            hinge.transform.SetParent(panel.transform.parent, true);
+            hinge.transform.SetPositionAndRotation(hingePosition, Quaternion.identity);
+
+            Animator animator = panel.GetComponent<Animator>();
+            if (animator != null) animator.enabled = false;
+            panel.name += " Panel";
             panel.transform.SetParent(hinge.transform, true);
             return hinge.AddComponent<DoorOutward>();
         }
@@ -260,7 +254,10 @@ namespace FPSStarter
         private static bool IsDoorName(string objectName)
         {
             string lower = objectName.ToLowerInvariant();
-            return lower.StartsWith("door") && !lower.Contains("controller");
+            return lower.StartsWith("door") &&
+                   !lower.Contains("controller") &&
+                   !lower.Contains("nob") &&
+                   !lower.Contains("handle");
         }
 
         private static void EnsureInteractableCollider(GameObject door)
