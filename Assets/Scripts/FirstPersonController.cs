@@ -48,6 +48,14 @@ namespace FPSStarter
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
 
+        /// <summary>Applies the Stage 2 movement tuning after the scene has loaded.</summary>
+        public void ConfigureStage2Movement(float iceSpeed, float iceSlideAcceleration, float hotSpeed)
+        {
+            iceSpeedMultiplier = Mathf.Clamp(iceSpeed, 0.05f, 1f);
+            iceAcceleration = Mathf.Max(0.01f, iceSlideAcceleration);
+            hotSpeedMultiplier = Mathf.Max(1f, hotSpeed);
+        }
+
         public void RespawnAt(Vector3 position, Quaternion rotation, RoomMechanicVolume room)
         {
             if (controller == null) controller = GetComponent<CharacterController>();

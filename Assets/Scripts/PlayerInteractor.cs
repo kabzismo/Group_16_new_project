@@ -59,7 +59,7 @@ namespace FPSStarter
                     // Stage 2 keys are collectibles, not physics objects the player
                     // needs to carry around. Claim them immediately and remove them
                     // from the room so they cannot be collected more than once.
-                    if (carryable.ItemId == "key")
+                    if (carryable.IsStage2Key)
                     {
                         Stage2KeyHunt hunt = FindFirstObjectByType<Stage2KeyHunt>();
                         if (hunt != null)

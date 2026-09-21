@@ -61,10 +61,77 @@ namespace FPSStarter
             if (roomCollider == null) return room.transform.position + Vector3.up * 1.9f;
 
             Bounds bounds = roomCollider.bounds;
-            // Start just above the room's floor instead of casting down from
-            // above the building. The latter can select the roof as the first
-            // valid upward-facing collider and respawn the player on it.
-            return new Vector3(bounds.center.x, bounds.min.y - 0.05f, bounds.center.z);
+            // Begin inside the room rather than above it: a ray from above can
+            // hit the roof and a spawn at the trigger's lower edge can be below
+            // the actual floor. The highest valid surface below the room centre
+            // is the walkable floor.
+            Vector3 origin = bounds.center;
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin,
+                Vector3.down,
+                bounds.extents.y + 12f,
+                ~0,
+                QueryTriggerInteraction.Ignore);
+
+            RaycastHit floorHit = default;
+            bool foundFloor = false;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f || IsRoof(hit.collider)) continue;
+                if (!foundFloor || hit.point.y > floorHit.point.y)
+                {
+                    floorHit = hit;
+                    foundFloor = true;
+                }
+            }
+
+            if (foundFloor) return floorHit.point + Vector3.up * 0.08f;
+
+            // Use the global safety floor only when it covers the Ice Room.
+            GameObject safetyFloor = GameObject.Find("Stage 2 Safety Floor");
+            Collider safetyCollider = safetyFloor != null ? safetyFloor.GetComponent<Collider>() : null;
+            if (safetyCollider != null && Covers(safetyCollider.bounds, bounds.center))
+                return new Vector3(bounds.center.x, safetyCollider.bounds.max.y + 0.08f, bounds.center.z);
+
+            // Some imported rooms have no usable floor collider. Give the Ice
+            // Room its own tiny, invisible fallback floor at its room level so
+            // a respawn remains playable instead of falling through the world.
+            float floorY = room.transform.parent != null
+                ? room.transform.parent.position.y + 0.15f
+                : bounds.min.y + 0.15f;
+            return GetOrCreateRespawnPlatform(bounds.center, floorY);
+        }
+
+        private static bool Covers(Bounds floor, Vector3 point)
+        {
+            return point.x >= floor.min.x && point.x <= floor.max.x &&
+                   point.z >= floor.min.z && point.z <= floor.max.z;
+        }
+
+        private static Vector3 GetOrCreateRespawnPlatform(Vector3 roomCenter, float floorY)
+        {
+            const string platformName = "Ice Room Respawn Platform";
+            GameObject platform = GameObject.Find(platformName);
+            if (platform == null)
+            {
+                platform = new GameObject(platformName);
+                platform.transform.position = new Vector3(roomCenter.x, floorY - 0.05f, roomCenter.z);
+                BoxCollider collider = platform.AddComponent<BoxCollider>();
+                collider.size = new Vector3(4f, 0.1f, 4f);
+            }
+
+            Collider platformCollider = platform.GetComponent<Collider>();
+            return new Vector3(roomCenter.x, platformCollider.bounds.max.y + 0.08f, roomCenter.z);
+        }
+
+        private static bool IsRoof(Collider collider)
+        {
+            for (Transform current = collider != null ? collider.transform : null; current != null; current = current.parent)
+            {
+                string name = current.name.ToLowerInvariant();
+                if (name.Contains("roof") || name.Contains("ceiling")) return true;
+            }
+            return false;
         }
 
         private void OnGUI()

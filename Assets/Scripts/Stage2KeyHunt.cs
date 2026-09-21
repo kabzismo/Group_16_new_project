@@ -6,7 +6,7 @@ namespace FPSStarter
 {
     public sealed class Stage2KeyHunt : MonoBehaviour
     {
-        public const int RequiredKeys = 3;
+        public const int RequiredKeys = 4;
 
         private readonly HashSet<int> claimed = new HashSet<int>();
         private readonly HashSet<string> claimedKeyIds = new HashSet<string>();
