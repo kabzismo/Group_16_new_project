@@ -30,7 +30,7 @@ namespace FPSStarter
 
             GUI.Label(
                 new Rect(0f, Screen.height * 0.49f, Screen.width, 34f),
-                "You collected all three keys. The game will now close.",
+                "You collected all four keys. The game will now close.",
                 messageStyle);
         }
 

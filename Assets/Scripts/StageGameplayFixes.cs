@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 namespace FPSStarter
 {
     /// <summary>
-    /// Runtime repairs for Stage 2: free movement, E-to-open animated doors, pickable keys, and a 3-key finish.
+    /// Runtime repairs for Stage 2: free movement, room mechanics, and four-key progression.
     /// </summary>
     public static class StageGameplayFixes
     {
@@ -34,6 +34,7 @@ namespace FPSStarter
             if (IsStage2(sceneName))
             {
                 ConfigureStage2KeyDoorLocks();
+                ConfigureStage2Movement();
                 EnsureHotFloorHazard();
                 EnsureStage2SafetyFloor();
                 EnableStage2EnvironmentalRooms();
@@ -114,6 +115,16 @@ namespace FPSStarter
 
             if (player.GetComponent<GroundHazardRespawn>() == null)
                 player.gameObject.AddComponent<GroundHazardRespawn>();
+        }
+
+        private static void ConfigureStage2Movement()
+        {
+            FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
+            if (player == null) return;
+
+            // Low acceleration preserves momentum on ice; the hot room has a
+            // noticeably faster run speed without affecting the other rooms.
+            player.ConfigureStage2Movement(0.7f, 0.85f, 1.5f);
         }
 
         private static void EnsureStage2DoorBootstrapper()
@@ -207,24 +218,69 @@ namespace FPSStarter
 
         internal static void ConfigureStage2KeyDoorLocks()
         {
-            string[] doorNames = { "door.002", "door.003", "door.004" };
+            string[] doorNames = { "door.001", "door.002", "door.003", "door.004" };
+            RoomMechanic[] roomOrder =
+            {
+                RoomMechanic.Ice,
+                RoomMechanic.Hot,
+                RoomMechanic.LowGravity,
+                RoomMechanic.HighGravity
+            };
             List<CarryableObject> availableKeys = new List<CarryableObject>();
             foreach (CarryableObject key in Object.FindObjectsByType<CarryableObject>(FindObjectsSortMode.None))
             {
                 if (key.IsStage2Key) availableKeys.Add(key);
             }
+            availableKeys.Sort((left, right) => string.CompareOrdinal(left.name, right.name));
 
-            for (int index = 0; index < doorNames.Length; index++)
+            for (int index = 0; index < roomOrder.Length; index++)
             {
                 DoorOutward door = FindDoor(doorNames[index]);
                 if (door == null || availableKeys.Count == 0) continue;
 
-                CarryableObject closestKey = FindClosestKey(door.transform.position, availableKeys);
-                string keyId = "stage2-key-door-" + (index + 2);
-                closestKey.SetItemId(keyId);
+                CarryableObject roomKey = availableKeys[0];
+                availableKeys.RemoveAt(0);
+                string keyId = "stage2-key-" + roomOrder[index].ToString().ToLowerInvariant();
+                roomKey.SetItemId(keyId);
                 door.RequireKey(keyId);
-                availableKeys.Remove(closestKey);
+
+                RoomMechanicVolume room = FindRoom(roomOrder[index]);
+                if (room != null) PlaceKeyInRoom(roomKey, room);
             }
+        }
+
+        private static RoomMechanicVolume FindRoom(RoomMechanic mechanic)
+        {
+            foreach (RoomMechanicVolume room in Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
+            {
+                if (room.Mechanic == mechanic) return room;
+            }
+            return null;
+        }
+
+        private static void PlaceKeyInRoom(CarryableObject key, RoomMechanicVolume room)
+        {
+            Collider roomCollider = room.GetComponent<Collider>();
+            if (roomCollider == null) return;
+
+            Bounds bounds = roomCollider.bounds;
+            Vector3 origin = bounds.center;
+            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, bounds.extents.y + 12f, ~0, QueryTriggerInteraction.Ignore);
+            RaycastHit floorHit = default;
+            bool foundFloor = false;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f) continue;
+                if (!foundFloor || hit.point.y > floorHit.point.y)
+                {
+                    floorHit = hit;
+                    foundFloor = true;
+                }
+            }
+
+            key.transform.position = foundFloor
+                ? floorHit.point + Vector3.up * 0.45f
+                : origin + Vector3.down * (bounds.extents.y * 0.45f);
         }
 
         private static DoorOutward FindDoor(string objectName)
@@ -235,20 +291,6 @@ namespace FPSStarter
                     return door;
             }
             return null;
-        }
-
-        private static CarryableObject FindClosestKey(Vector3 position, List<CarryableObject> keys)
-        {
-            CarryableObject closest = keys[0];
-            float closestDistance = (closest.transform.position - position).sqrMagnitude;
-            for (int index = 1; index < keys.Count; index++)
-            {
-                float distance = (keys[index].transform.position - position).sqrMagnitude;
-                if (distance >= closestDistance) continue;
-                closest = keys[index];
-                closestDistance = distance;
-            }
-            return closest;
         }
 
         private static bool IsDoorName(string objectName)
@@ -355,7 +397,10 @@ namespace FPSStarter
         private static bool IsKeyName(string objectName)
         {
             string lower = objectName.ToLowerInvariant();
-            return lower.Contains("key") && !lower.Contains("keyboard");
+            return lower.Contains("key") &&
+                   !lower.Contains("keyboard") &&
+                   !lower.Contains("holder") &&
+                   !lower.Contains("table");
         }
 
         private static void MakePickup(GameObject key)
