@@ -264,23 +264,59 @@ namespace FPSStarter
             if (roomCollider == null) return;
 
             Bounds bounds = roomCollider.bounds;
-            Vector3 origin = bounds.center;
-            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, bounds.extents.y + 12f, ~0, QueryTriggerInteraction.Ignore);
-            RaycastHit floorHit = default;
-            bool foundFloor = false;
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f) continue;
-                if (!foundFloor || hit.point.y > floorHit.point.y)
-                {
-                    floorHit = hit;
-                    foundFloor = true;
-                }
-            }
+            // Imported level floors have inconsistent or missing collision data.
+            // Placing keys from a downward ray caused them to land outside the
+            // room (and, in one case, hundreds of units above it).  Keep every
+            // key at a predictable, visible point just above its room floor.
+            Vector3 position = bounds.center;
+            position.x += bounds.extents.x * 0.18f;
+            position.z -= bounds.extents.z * 0.18f;
+            position.y = bounds.min.y + 0.85f;
+            key.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, 35f, 0f));
+            EnsureVisibleKeyMarker(key.gameObject);
+        }
 
-            key.transform.position = foundFloor
-                ? floorHit.point + Vector3.up * 0.45f
-                : origin + Vector3.down * (bounds.extents.y * 0.45f);
+        private static void EnsureVisibleKeyMarker(GameObject key)
+        {
+            Transform existingMarker = key.transform.Find("Stage 2 Key Visual");
+            if (existingMarker != null) return;
+
+            // The source key meshes are not dependable at runtime.  Give each
+            // collectible a bright, simple key-shaped marker so it is always
+            // visible and has a sensible interaction target.
+            foreach (Renderer renderer in key.GetComponentsInChildren<Renderer>(true))
+                renderer.enabled = false;
+
+            GameObject marker = new GameObject("Stage 2 Key Visual");
+            marker.transform.SetParent(key.transform, false);
+            marker.transform.localPosition = Vector3.zero;
+
+            Material material = new Material(Shader.Find("Standard"));
+            material.color = new Color(1f, 0.76f, 0.08f);
+            material.EnableKeyword("_EMISSION");
+            material.SetColor("_EmissionColor", new Color(1f, 0.38f, 0.02f));
+
+            CreateKeyPiece(marker.transform, "Shaft", new Vector3(0f, 0.28f, 0f), new Vector3(0.18f, 0.95f, 0.18f), material);
+            CreateKeyPiece(marker.transform, "Bow", new Vector3(0f, 0.82f, 0f), new Vector3(0.56f, 0.22f, 0.18f), material);
+            CreateKeyPiece(marker.transform, "Tooth", new Vector3(0.2f, -0.12f, 0f), new Vector3(0.38f, 0.18f, 0.18f), material);
+
+            BoxCollider collider = key.GetComponent<BoxCollider>();
+            if (collider != null)
+            {
+                collider.center = new Vector3(0f, 0.35f, 0f);
+                collider.size = new Vector3(0.8f, 1.35f, 0.5f);
+            }
+        }
+
+        private static void CreateKeyPiece(Transform parent, string pieceName, Vector3 position, Vector3 scale, Material material)
+        {
+            GameObject piece = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            piece.name = pieceName;
+            piece.transform.SetParent(parent, false);
+            piece.transform.localPosition = position;
+            piece.transform.localScale = scale;
+            piece.GetComponent<Renderer>().sharedMaterial = material;
+            Object.Destroy(piece.GetComponent<Collider>());
         }
 
         private static DoorOutward FindDoor(string objectName)
