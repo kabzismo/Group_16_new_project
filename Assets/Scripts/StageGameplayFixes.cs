@@ -243,44 +243,7 @@ namespace FPSStarter
                 string keyId = "stage2-key-" + roomOrder[index].ToString().ToLowerInvariant();
                 roomKey.SetItemId(keyId);
                 door.RequireKey(keyId);
-
-                RoomMechanicVolume room = FindRoom(roomOrder[index]);
-                if (room != null) PlaceKeyInRoom(roomKey, room);
             }
-        }
-
-        private static RoomMechanicVolume FindRoom(RoomMechanic mechanic)
-        {
-            foreach (RoomMechanicVolume room in Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
-            {
-                if (room.Mechanic == mechanic) return room;
-            }
-            return null;
-        }
-
-        private static void PlaceKeyInRoom(CarryableObject key, RoomMechanicVolume room)
-        {
-            Collider roomCollider = room.GetComponent<Collider>();
-            if (roomCollider == null) return;
-
-            Bounds bounds = roomCollider.bounds;
-            Vector3 origin = bounds.center;
-            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, bounds.extents.y + 12f, ~0, QueryTriggerInteraction.Ignore);
-            RaycastHit floorHit = default;
-            bool foundFloor = false;
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f) continue;
-                if (!foundFloor || hit.point.y > floorHit.point.y)
-                {
-                    floorHit = hit;
-                    foundFloor = true;
-                }
-            }
-
-            key.transform.position = foundFloor
-                ? floorHit.point + Vector3.up * 0.45f
-                : origin + Vector3.down * (bounds.extents.y * 0.45f);
         }
 
         private static DoorOutward FindDoor(string objectName)
