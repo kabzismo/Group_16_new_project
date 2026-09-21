@@ -5,57 +5,54 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 
-public class Dialogue : MonoBehaviour
+public class Hint : MonoBehaviour
 {
-    // ---- Same fields as your old script (old scene keeps its references) ----
+    public GameObject hintPanel;              
     public TextMeshProUGUI textComponent;
-    public string[] lines;
-    public float textSpeed;
     public Image characterImage;
-    public GameObject levelChoicePanel;       // optional now
+    public string[] lines;
+    public float textSpeed = 0.03f;
 
-    // ---- New fields (only needed for the hint setup) ----
-    public GameObject dialoguePanel;          
-    public bool playOnStart = true;          
-    public UnityEvent onFinished;
+    public MonoBehaviour[] disableWhileActive; 
+    public UnityEvent onFinished;              
 
     private int index;
     private bool isTyping;
     private bool isActive;
     private int startFrame;
 
-    private GameObject Panel => dialoguePanel != null ? dialoguePanel : gameObject;
-
     void Start()
     {
         textComponent.text = string.Empty;
-
-        if (levelChoicePanel != null)
-            levelChoicePanel.SetActive(false);
-
-        if (playOnStart)
-            StartDialogue();
-        else
-            Panel.SetActive(false);
+        hintPanel.SetActive(false);
     }
 
-    public void StartDialogue()
+    
+    public void StartHint()
     {
         index = 0;
         isActive = true;
         startFrame = Time.frameCount;
 
-        Panel.SetActive(true);
+        
+        foreach (var m in disableWhileActive)
+            if (m != null) m.enabled = false;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        hintPanel.SetActive(true);
         characterImage.gameObject.SetActive(true);
 
         StopAllCoroutines();
         StartCoroutine(TypeLine());
     }
 
-    public void StartDialogue(string[] newLines)
+    
+    public void StartHint(string[] newLines)
     {
         lines = newLines;
-        StartDialogue();
+        StartHint();
     }
 
     void Update()
@@ -103,10 +100,14 @@ public class Dialogue : MonoBehaviour
         {
             isActive = false;
             characterImage.gameObject.SetActive(false);
-            Panel.SetActive(false);
+            hintPanel.SetActive(false);
 
-            if (levelChoicePanel != null)
-                levelChoicePanel.SetActive(true);
+            
+            foreach (var m in disableWhileActive)
+                if (m != null) m.enabled = true;
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
 
             onFinished.Invoke();
         }

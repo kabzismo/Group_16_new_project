@@ -1791,11 +1791,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d98b17cc4945dc41ab8df63299d5235, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LampFlicker
-  lampLight: {fileID: 903085278}
-  minIntensity: 0.5
-  maxIntensity: 2
-  flickerSpeed: 0.05
-  flickerDuration: 0.8
 --- !u!1 &915651743
 GameObject:
   m_ObjectHideFlags: 0
