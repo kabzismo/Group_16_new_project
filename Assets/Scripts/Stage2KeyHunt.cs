@@ -7,12 +7,19 @@ namespace FPSStarter
     public sealed class Stage2KeyHunt : MonoBehaviour
     {
         public const int RequiredKeys = 4;
+        private static readonly string[] RequiredKeyIds =
+        {
+            "stage2-key-ice",
+            "stage2-key-hot",
+            "stage2-key-lowgravity",
+            "stage2-key-highgravity"
+        };
 
         private readonly HashSet<int> claimed = new HashSet<int>();
         private readonly HashSet<string> claimedKeyIds = new HashSet<string>();
         private bool ending;
 
-        public int ClaimedCount => claimed.Count;
+        public int ClaimedCount => claimedKeyIds.Count;
 
         public bool HasCollected(string keyId) => claimedKeyIds.Contains(keyId);
 
@@ -24,11 +31,20 @@ namespace FPSStarter
             CarryableObject carryable = key.GetComponent<CarryableObject>();
             if (carryable != null) claimedKeyIds.Add(carryable.ItemId);
 
-            GameSession.CollectedItems = claimed.Count;
+            GameSession.CollectedItems = claimedKeyIds.Count;
 
-            if (claimed.Count >= RequiredKeys)
+            if (HasAllRequiredKeys())
                 StartCoroutine(EndStage());
 
+            return true;
+        }
+
+        private bool HasAllRequiredKeys()
+        {
+            foreach (string keyId in RequiredKeyIds)
+            {
+                if (!claimedKeyIds.Contains(keyId)) return false;
+            }
             return true;
         }
 
@@ -74,7 +90,7 @@ namespace FPSStarter
 
             GUI.Label(
                 new Rect(18f, 16f, 420f, 28f),
-                "Keys: " + claimed.Count + " / " + RequiredKeys);
+                "Keys: " + ClaimedCount + " / " + RequiredKeys);
         }
     }
 }
