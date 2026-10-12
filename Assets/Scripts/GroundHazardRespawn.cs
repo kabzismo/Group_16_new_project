@@ -10,21 +10,50 @@ namespace FPSStarter
     public sealed class GroundHazardRespawn : MonoBehaviour
     {
         [SerializeField, Min(0.5f)] private float maximumGroundTime = 3f;
+        [Header("Respawn Door")]
+        [Tooltip("The fixed door used after a Hot Room death. Set to Door .004 in Stage 2.")]
+        [SerializeField] private Transform respawnDoor;
+        [SerializeField] private string respawnDoorName = "Door .004";
+        [Tooltip("Clearance from the closed door to the player's capsule, in world units.")]
+        [SerializeField, Min(0f)] private float entranceRespawnOffset = 0.75f;
+
+        [Header("Timer Appearance")]
+        [SerializeField] private Font timerFont;
+        [SerializeField] private string timerHeading = "HOT ROOM";
+        [SerializeField] private Color timerPanelColor = new Color(0.055f, 0.065f, 0.08f, 0.95f);
+        [SerializeField] private Color timerAccentColor = new Color(1f, 0.58f, 0.24f, 1f);
+        [SerializeField] private Color timerDangerColor = new Color(1f, 0.2f, 0.15f, 1f);
+        [SerializeField, Min(0f)] private float timerTopMargin = 72f;
 
         private FirstPersonController player;
         private RoomMechanicVolume iceRoom;
         private float groundTime;
         private float respawnMessageUntil;
+        private Bounds closedDoorBounds;
+        private Vector3 doorRespawnPosition;
+        private Quaternion doorRespawnRotation;
+        private bool hasDoorRespawn;
+        private bool reportedMissingDoor;
+        private GUIStyle timerHeadingStyle;
+        private GUIStyle timerValueStyle;
+        private GUIStyle timerStatusStyle;
+        private GUIStyle timerInstructionStyle;
 
         private void Awake()
         {
             player = GetComponent<FirstPersonController>();
         }
 
+        private void Start()
+        {
+            CacheDoorRespawn();
+        }
+
         private void Update()
         {
             if (player == null || !player.isActiveAndEnabled) return;
             if (iceRoom == null) iceRoom = FindIceRoom();
+            if (!hasDoorRespawn) CacheDoorRespawn();
 
             if (player.CurrentMechanic != RoomMechanic.Hot || !player.IsGrounded)
             {
@@ -33,17 +62,65 @@ namespace FPSStarter
             }
 
             groundTime += Time.deltaTime;
-            if (groundTime >= maximumGroundTime) RespawnInIceRoom();
+            if (groundTime >= maximumGroundTime) RespawnAtEntrance();
         }
 
-        private void RespawnInIceRoom()
+        private void RespawnAtEntrance()
         {
             groundTime = 0f;
-            if (iceRoom == null) return;
+            if (!hasDoorRespawn && !CacheDoorRespawn()) return;
 
-            player.RespawnAt(GetRoomFloorSpawnPosition(iceRoom), Quaternion.Euler(0f, -90f, 0f), iceRoom);
+            player.RespawnAt(GetDoorFloorPosition(), doorRespawnRotation, iceRoom);
             Physics.SyncTransforms();
             respawnMessageUntil = Time.time + 1.5f;
+        }
+
+        private bool CacheDoorRespawn()
+        {
+            if (iceRoom == null) iceRoom = FindIceRoom();
+            Collider iceCollider = iceRoom != null ? iceRoom.GetComponent<Collider>() : null;
+            if (iceCollider == null) return false;
+
+            // The explicit scene reference distinguishes the two Door .004
+            // models. Name lookup also supports older scenes and live reloads.
+            if (respawnDoor == null)
+            {
+                float nearest = float.PositiveInfinity;
+                foreach (Renderer candidate in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                {
+                    if (!string.Equals(candidate.name, respawnDoorName, System.StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(candidate.name, respawnDoorName + " Panel", System.StringComparison.OrdinalIgnoreCase)) continue;
+                    float distance = (candidate.bounds.center - iceCollider.bounds.center).sqrMagnitude;
+                    if (distance >= nearest) continue;
+                    nearest = distance;
+                    respawnDoor = candidate.transform;
+                }
+            }
+
+            Renderer doorRenderer = respawnDoor != null ? respawnDoor.GetComponent<Renderer>() : null;
+            if (doorRenderer == null && respawnDoor != null) doorRenderer = respawnDoor.GetComponentInChildren<Renderer>();
+            if (doorRenderer == null)
+            {
+                if (!reportedMissingDoor)
+                    Debug.LogWarning("Hot Room respawn door not found. Assign Door .004 to Respawn Door on the player.", this);
+                reportedMissingDoor = true;
+                return false;
+            }
+
+            // Capture the doorway before its panel swings. Respawning must not
+            // move with the open door or with the player's route into the room.
+            Physics.SyncTransforms();
+            closedDoorBounds = doorRenderer.bounds;
+            bool widthAlongX = closedDoorBounds.size.x >= closedDoorBounds.size.z;
+            Vector3 safeSide = widthAlongX ? Vector3.forward : Vector3.right;
+            if (Vector3.Dot(iceCollider.bounds.center - closedDoorBounds.center, safeSide) < 0f) safeSide = -safeSide;
+            float halfThickness = widthAlongX ? closedDoorBounds.extents.z : closedDoorBounds.extents.x;
+            float radius = GetComponent<CharacterController>().radius;
+            doorRespawnPosition = closedDoorBounds.center + safeSide * (halfThickness + radius + entranceRespawnOffset);
+            doorRespawnPosition.y = closedDoorBounds.min.y + 0.08f;
+            doorRespawnRotation = Quaternion.LookRotation(-safeSide, Vector3.up);
+            hasDoorRespawn = true;
+            return true;
         }
 
         private static RoomMechanicVolume FindIceRoom()
@@ -55,29 +132,17 @@ namespace FPSStarter
             return null;
         }
 
-        private static Vector3 GetRoomFloorSpawnPosition(RoomMechanicVolume room)
+        private Vector3 GetDoorFloorPosition()
         {
-            Collider roomCollider = room.GetComponent<Collider>();
-            if (roomCollider == null) return room.transform.position + Vector3.up * 1.9f;
-
-            Bounds bounds = roomCollider.bounds;
-            // Begin inside the room rather than above it: a ray from above can
-            // hit the roof and a spawn at the trigger's lower edge can be below
-            // the actual floor. The highest valid surface below the room centre
-            // is the walkable floor.
-            Vector3 origin = bounds.center;
-            RaycastHit[] hits = Physics.RaycastAll(
-                origin,
-                Vector3.down,
-                bounds.extents.y + 12f,
-                ~0,
-                QueryTriggerInteraction.Ignore);
+            Vector3 origin = new Vector3(doorRespawnPosition.x, closedDoorBounds.center.y, doorRespawnPosition.z);
+            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, 50f, ~0, QueryTriggerInteraction.Ignore);
 
             RaycastHit floorHit = default;
             bool foundFloor = false;
             foreach (RaycastHit hit in hits)
             {
-                if (hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f || IsRoof(hit.collider)) continue;
+                if (hit.collider.transform.IsChildOf(transform) || hit.collider.GetComponentInParent<DoorOutward>() != null ||
+                    hit.normal.y < 0.6f || hit.point.y >= origin.y - 0.02f || IsRoof(hit.collider)) continue;
                 if (!foundFloor || hit.point.y > floorHit.point.y)
                 {
                     floorHit = hit;
@@ -85,39 +150,22 @@ namespace FPSStarter
                 }
             }
 
-            if (foundFloor) return floorHit.point + Vector3.up * 0.08f;
-
-            // Use the global safety floor only when it covers the Ice Room.
-            GameObject safetyFloor = GameObject.Find("Stage 2 Safety Floor");
-            Collider safetyCollider = safetyFloor != null ? safetyFloor.GetComponent<Collider>() : null;
-            if (safetyCollider != null && Covers(safetyCollider.bounds, bounds.center))
-                return new Vector3(bounds.center.x, safetyCollider.bounds.max.y + 0.08f, bounds.center.z);
-
-            // Some imported rooms have no usable floor collider. Give the Ice
-            // Room its own tiny, invisible fallback floor at its room level so
-            // a respawn remains playable instead of falling through the world.
-            float floorY = room.transform.parent != null
-                ? room.transform.parent.position.y + 0.15f
-                : bounds.min.y + 0.15f;
-            return GetOrCreateRespawnPlatform(bounds.center, floorY);
-        }
-
-        private static bool Covers(Bounds floor, Vector3 point)
-        {
-            return point.x >= floor.min.x && point.x <= floor.max.x &&
-                   point.z >= floor.min.z && point.z <= floor.max.z;
+            Vector3 position = doorRespawnPosition;
+            if (foundFloor) position.y = floorHit.point.y + 0.08f;
+            else position = GetOrCreateRespawnPlatform(position, closedDoorBounds.min.y);
+            return position;
         }
 
         private static Vector3 GetOrCreateRespawnPlatform(Vector3 roomCenter, float floorY)
         {
-            const string platformName = "Ice Room Respawn Platform";
+            const string platformName = "Door .004 Respawn Platform";
             GameObject platform = GameObject.Find(platformName);
             if (platform == null)
             {
                 platform = new GameObject(platformName);
                 platform.transform.position = new Vector3(roomCenter.x, floorY - 0.05f, roomCenter.z);
                 BoxCollider collider = platform.AddComponent<BoxCollider>();
-                collider.size = new Vector3(4f, 0.1f, 4f);
+                collider.size = new Vector3(2f, 0.1f, 2f);
             }
 
             Collider platformCollider = platform.GetComponent<Collider>();
@@ -137,17 +185,58 @@ namespace FPSStarter
         private void OnGUI()
         {
             if (player == null || !player.isActiveAndEnabled) return;
+            bool showingRespawn = Time.time < respawnMessageUntil;
+            if (!showingRespawn && player.CurrentMechanic != RoomMechanic.Hot) return;
 
-            if (Time.time < respawnMessageUntil)
+            Matrix4x4 previousMatrix = GUI.matrix;
+            Color previousColor = GUI.color;
+            try
             {
-                GUI.Label(new Rect(Screen.width * 0.5f - 130f, 52f, 260f, 28f), "The lava got you! Respawned in the Ice Room.");
-                return;
+                GUI.color = Color.white;
+                float scale = RoomHudGraphics.Scale;
+                GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+                float canvasWidth = Screen.width / scale;
+                Rect panel = new Rect((canvasWidth - 400f) * 0.5f, timerTopMargin, 400f, showingRespawn ? 94f : 116f);
+                float remaining = Mathf.Max(0f, maximumGroundTime - groundTime);
+                float fraction = Mathf.Clamp01(remaining / Mathf.Max(0.5f, maximumGroundTime));
+                bool airborne = !player.IsGrounded;
+                bool urgent = !showingRespawn && !airborne && remaining <= Mathf.Min(1f, maximumGroundTime * 0.4f);
+                Color accent = urgent ? timerDangerColor : timerAccentColor;
+                if (urgent)
+                    accent = Color.Lerp(timerDangerColor, timerAccentColor, (Mathf.Sin(Time.unscaledTime * 8f) + 1f) * 0.15f);
+                RoomHudGraphics.Panel(panel, timerPanelColor, accent);
+                EnsureTimerStyles(accent);
+                GUI.Label(new Rect(panel.x + 20f, panel.y + 13f, showingRespawn ? 360f : 160f, 24f),
+                    showingRespawn ? "BACK BY " + respawnDoorName.ToUpperInvariant() : timerHeading, timerHeadingStyle);
+
+                if (showingRespawn)
+                {
+                    GUI.Label(new Rect(panel.x + 20f, panel.y + 44f, 360f, 34f),
+                        "The lava got you. Try again!", timerInstructionStyle);
+                    return;
+                }
+
+                GUI.Label(new Rect(panel.x + 190f, panel.y + 15f, 190f, 20f),
+                    airborne ? "AIRBORNE / RESET" : urgent ? "JUMP NOW" : "FLOOR TIMER", timerStatusStyle);
+                GUI.Label(new Rect(panel.x + 20f, panel.y + 39f, 180f, 46f), remaining.ToString("0.0") + "s", timerValueStyle);
+                GUI.Label(new Rect(panel.x + 210f, panel.y + 48f, 170f, 28f), "JUMP TO RESET", timerInstructionStyle);
+                Rect track = new Rect(panel.x + 20f, panel.y + 96f, 360f, 6f);
+                RoomHudGraphics.Fill(track, new Color(1f, 1f, 1f, 0.1f));
+                RoomHudGraphics.Fill(new Rect(track.x, track.y, track.width * fraction, track.height), accent);
             }
+            finally
+            {
+                GUI.matrix = previousMatrix;
+                GUI.color = previousColor;
+            }
+        }
 
-            if (player.CurrentMechanic != RoomMechanic.Hot) return;
-
-            float remaining = Mathf.Max(0f, maximumGroundTime - groundTime);
-            GUI.Label(new Rect(Screen.width * 0.5f - 110f, 52f, 220f, 28f), "Lava! Jump within " + remaining.ToString("0.0") + "s");
+        private void EnsureTimerStyles(Color accent)
+        {
+            RoomHudGraphics.LabelStyle(ref timerHeadingStyle, 14, accent, TextAnchor.MiddleLeft, timerFont, true);
+            RoomHudGraphics.LabelStyle(ref timerValueStyle, 34, Color.white, TextAnchor.MiddleLeft, timerFont, true);
+            RoomHudGraphics.LabelStyle(ref timerStatusStyle, 12, accent, TextAnchor.MiddleRight, timerFont, true);
+            RoomHudGraphics.LabelStyle(ref timerInstructionStyle, 14, new Color(0.83f, 0.85f, 0.88f), TextAnchor.MiddleLeft, timerFont);
         }
     }
 }

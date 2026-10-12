@@ -7,6 +7,8 @@ namespace FPSStarter
     public sealed class Stage2KeyHunt : MonoBehaviour
     {
         public const int RequiredKeys = 4;
+        [Header("Completion Screen")]
+        [SerializeField, Min(0.5f)] private float completionScreenDuration = 4f;
         private static readonly string[] RequiredKeyIds =
         {
             "stage2-key-ice",
@@ -73,9 +75,9 @@ namespace FPSStarter
             if (screen == null)
                 screen = gameObject.AddComponent<Stage2CompletionScreen>();
 
-            screen.Show();
+            screen.Show(completionScreenDuration);
 
-            yield return new WaitForSecondsRealtime(4f);
+            yield return new WaitForSecondsRealtime(completionScreenDuration);
 
             Application.Quit();
 

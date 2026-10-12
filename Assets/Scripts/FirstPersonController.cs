@@ -18,7 +18,8 @@ namespace FPSStarter
 
         [Header("Room Mechanics")]
         [SerializeField, Range(0.05f, 1f)] private float iceSpeedMultiplier = 0.65f;
-        [SerializeField, Min(0.01f)] private float iceAcceleration = 2.25f;
+        [SerializeField, Min(0.01f)] private float iceAcceleration = 7f;
+        [SerializeField, Min(0.01f)] private float iceDeceleration = 9f;
         [SerializeField, Min(1f)] private float hotSpeedMultiplier = 1.15f;
         [SerializeField, Min(1f)] private float hotControlMultiplier = 1.3f;
         [SerializeField, Range(0.05f, 1f)] private float lowGravityMultiplier = 0.45f;
@@ -38,6 +39,7 @@ namespace FPSStarter
         private bool cursorLocked;
         private readonly System.Collections.Generic.List<RoomMechanicVolume> activeRoomVolumes = new System.Collections.Generic.List<RoomMechanicVolume>();
         private Vector3 horizontalVelocity;
+        private Vector3 targetHorizontalVelocity;
         private RoomMechanic currentMechanic;
         private RoomMechanicVolume activeRoomVolume;
         private float standingHeight;
@@ -47,12 +49,14 @@ namespace FPSStarter
         public bool IsGrounded => controller != null && controller.isGrounded;
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
+        public RoomMechanicVolume CurrentRoom => activeRoomVolume;
 
         /// <summary>Applies the Stage 2 movement tuning after the scene has loaded.</summary>
-        public void ConfigureStage2Movement(float iceSpeed, float iceSlideAcceleration, float hotSpeed)
+        public void ConfigureStage2Movement(float iceSpeed, float iceAccelerationRate, float iceDecelerationRate, float hotSpeed)
         {
             iceSpeedMultiplier = Mathf.Clamp(iceSpeed, 0.05f, 1f);
-            iceAcceleration = Mathf.Max(0.01f, iceSlideAcceleration);
+            iceAcceleration = Mathf.Max(0.01f, iceAccelerationRate);
+            iceDeceleration = Mathf.Max(0.01f, iceDecelerationRate);
             hotSpeedMultiplier = Mathf.Max(1f, hotSpeed);
         }
 
@@ -63,8 +67,12 @@ namespace FPSStarter
 
             controller.enabled = false;
             transform.SetPositionAndRotation(position, rotation);
+            yaw = rotation.eulerAngles.y;
+            pitch = 0f;
+            if (view != null && view != transform) view.localRotation = Quaternion.identity;
             verticalVelocity = 0f;
             horizontalVelocity = Vector3.zero;
+            targetHorizontalVelocity = Vector3.zero;
             activeRoomVolumes.Clear();
             activeRoomVolume = null;
             currentMechanic = RoomMechanic.None;
@@ -174,6 +182,7 @@ namespace FPSStarter
             float effectiveGravity = gravity * (currentMechanic == RoomMechanic.LowGravity ? lowGravityMultiplier : 1f) * roomGravityMultiplier;
             float effectiveJumpHeight = jumpHeight * (currentMechanic == RoomMechanic.LowGravity ? lowGravityJumpMultiplier : 1f);
             bool grounded = CheckGrounded();
+            bool standingOnBox = currentMechanic == RoomMechanic.Ice && verticalVelocity <= 0f && IsStandingOnBox();
             if (grounded && verticalVelocity < 0f) verticalVelocity = -2f;
             bool jump = (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
             if (grounded && jump && !crouching) verticalVelocity = Mathf.Sqrt(effectiveJumpHeight * -2f * effectiveGravity);
@@ -185,8 +194,14 @@ namespace FPSStarter
             float speedMultiplier = currentMechanic == RoomMechanic.Ice ? iceSpeedMultiplier : currentMechanic == RoomMechanic.Hot ? hotSpeedMultiplier : 1f;
             if (crouching) speedMultiplier *= crawlSpeedMultiplier;
             Vector3 targetVelocity = direction * moveSpeed * speedMultiplier * roomSpeedMultiplier;
-            if (currentMechanic == RoomMechanic.Ice)
-                horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, iceAcceleration * Time.deltaTime);
+            targetHorizontalVelocity = targetVelocity;
+            if (currentMechanic == RoomMechanic.Ice && !standingOnBox)
+            {
+                // Ice keeps its lower top speed, but now responds promptly when
+                // the player starts moving or releases every movement control.
+                float responseRate = input.sqrMagnitude > 0f ? iceAcceleration : iceDeceleration;
+                horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, responseRate * Time.deltaTime);
+            }
             else
                 horizontalVelocity = targetVelocity;
             controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
@@ -215,6 +230,38 @@ namespace FPSStarter
             float radius = Mathf.Max(0.08f, controller.radius * 0.9f);
             Vector3 origin = transform.TransformPoint(controller.center) + Vector3.down * (controller.height * 0.5f - radius);
             return Physics.SphereCast(origin, radius, Vector3.down, out _, controller.skinWidth + 0.12f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
+        private bool IsStandingOnBox()
+        {
+            float radius = Mathf.Max(0.08f, controller.radius * 0.9f);
+            Vector3 origin = transform.TransformPoint(controller.center) + Vector3.down * (controller.height * 0.5f - radius);
+            float distance = radius + controller.skinWidth + 0.12f;
+            // The ray also works when the bottom sphere already overlaps the
+            // supporting surface, which prevents flickering traction on landing.
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, distance, ~0, QueryTriggerInteraction.Ignore) &&
+                hit.normal.y > 0.5f && IsBoxSurface(hit.collider)) return true;
+
+            return Physics.SphereCast(origin, radius, Vector3.down, out hit, controller.skinWidth + 0.12f, ~0, QueryTriggerInteraction.Ignore) &&
+                   hit.normal.y > 0.5f && IsBoxSurface(hit.collider);
+        }
+
+        private static bool IsBoxSurface(Collider surface)
+        {
+            // Imported boxes can use MeshColliders. Floor slabs can use
+            // BoxColliders, so collider type alone does not identify a box.
+            string name = surface.name.ToLowerInvariant();
+            if (name.Contains("floor") || name.Contains("ground") || name.StartsWith("plane") || name.Contains("respawn"))
+                return false;
+            bool boxName = name.StartsWith("cube") || name.Contains("box") || name.Contains("crate") || name.Contains("block");
+            Vector3 size = surface.bounds.size;
+            return boxName && size.y > 0.2f && size.x <= 6f && size.z <= 6f;
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (currentMechanic == RoomMechanic.Ice && verticalVelocity <= 0f && hit.normal.y > 0.5f && IsBoxSurface(hit.collider))
+                horizontalVelocity = targetHorizontalVelocity;
         }
 
         private bool IsCrouchPressed(Keyboard keyboard)

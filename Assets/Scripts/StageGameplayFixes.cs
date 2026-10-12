@@ -29,6 +29,8 @@ namespace FPSStarter
             RepairMeshColliders();
             PrepareAnimatedDoors();
             PrepareChests();
+
+            if (IsStage2(sceneName)) RemoveIceRoomSmallKey();
             PrepareKeys();
 
             if (IsStage2(sceneName))
@@ -47,6 +49,15 @@ namespace FPSStarter
         private static bool IsStage2(string sceneName)
         {
             return sceneName == "Stage 2" || sceneName == "Level 2 grey scale";
+        }
+
+        private static void RemoveIceRoomSmallKey()
+        {
+            foreach (Transform transform in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            {
+                if (string.Equals(transform.name, "Small key", System.StringComparison.OrdinalIgnoreCase))
+                    transform.gameObject.SetActive(false);
+            }
         }
 
         private static void StripPlayerPhysicsConflicts()
@@ -101,6 +112,8 @@ namespace FPSStarter
             foreach (RoomMechanicVolume room in rooms)
             {
                 room.enabled = true;
+                if (room.Mechanic == RoomMechanic.Ice)
+                    room.Configure(RoomMechanic.Ice, room.Priority, room.GravityMultiplier, 1f);
                 Collider roomCollider = room.GetComponent<Collider>();
                 if (roomCollider == null) roomCollider = room.gameObject.AddComponent<BoxCollider>();
                 roomCollider.enabled = true;
@@ -122,9 +135,9 @@ namespace FPSStarter
             FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
             if (player == null) return;
 
-            // Low acceleration preserves momentum on ice; the hot room has a
-            // noticeably faster run speed without affecting the other rooms.
-            player.ConfigureStage2Movement(0.7f, 0.85f, 1.5f);
+            // Ice retains its slower top speed but now starts and stops quickly.
+            // These values apply only while the Ice room trigger is active.
+            player.ConfigureStage2Movement(0.7f, 7f, 9f, 1.5f);
         }
 
         private static void EnsureStage2DoorBootstrapper()
@@ -353,6 +366,9 @@ namespace FPSStarter
             {
                 if (!IsKeyName(root.name)) continue;
                 if (root.parent != null && IsKeyName(root.parent.name)) continue;
+                // Empty import markers are not pickups and must not consume
+                // one of the four visible keys' door assignments.
+                if (root.GetComponentInChildren<Renderer>() == null) continue;
                 MakePickup(root.gameObject);
             }
         }
