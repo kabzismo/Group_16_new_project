@@ -47,6 +47,7 @@ namespace FPSStarter
         private Vector3 standingViewPosition;
 
         public bool IsGrounded => controller != null && controller.isGrounded;
+        public float NormalMoveSpeed => moveSpeed;
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
         public RoomMechanicVolume CurrentRoom => activeRoomVolume;

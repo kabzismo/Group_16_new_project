@@ -40,6 +40,7 @@ namespace FPSStarter
                 EnsureHotFloorHazard();
                 EnsureStage2SafetyFloor();
                 EnableStage2EnvironmentalRooms();
+                EnsureHighGravityEnemy();
                 EnsureStage2DoorBootstrapper();
                 EnsureKeyHunt();
                 UnstickPlayer();
@@ -128,6 +129,17 @@ namespace FPSStarter
 
             if (player.GetComponent<GroundHazardRespawn>() == null)
                 player.gameObject.AddComponent<GroundHazardRespawn>();
+        }
+
+        private static void EnsureHighGravityEnemy()
+        {
+            if (Object.FindFirstObjectByType<HighGravityEnemy>() != null) return;
+            foreach (RoomMechanicVolume room in Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
+            {
+                if (room.Mechanic != RoomMechanic.HighGravity) continue;
+                new GameObject("High Gravity Enemy Settings").AddComponent<HighGravityEnemy>().Configure(room);
+                return;
+            }
         }
 
         private static void ConfigureStage2Movement()

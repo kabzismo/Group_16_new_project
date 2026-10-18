@@ -29,6 +29,7 @@ namespace FPSStarter
         private RoomMechanicVolume iceRoom;
         private float groundTime;
         private float respawnMessageUntil;
+        private string respawnMessage = "The lava got you. Try again!";
         private Bounds closedDoorBounds;
         private Vector3 doorRespawnPosition;
         private Quaternion doorRespawnRotation;
@@ -67,12 +68,20 @@ namespace FPSStarter
 
         private void RespawnAtEntrance()
         {
+            TryRespawnAtDoor("The lava got you. Try again!");
+        }
+
+        /// <summary>Shared death checkpoint for room hazards and enemy catches.</summary>
+        public bool TryRespawnAtDoor(string message)
+        {
             groundTime = 0f;
-            if (!hasDoorRespawn && !CacheDoorRespawn()) return;
+            if (!hasDoorRespawn && !CacheDoorRespawn()) return false;
 
             player.RespawnAt(GetDoorFloorPosition(), doorRespawnRotation, iceRoom);
             Physics.SyncTransforms();
+            respawnMessage = message;
             respawnMessageUntil = Time.time + 1.5f;
+            return true;
         }
 
         private bool CacheDoorRespawn()
@@ -212,7 +221,7 @@ namespace FPSStarter
                 if (showingRespawn)
                 {
                     GUI.Label(new Rect(panel.x + 20f, panel.y + 44f, 360f, 34f),
-                        "The lava got you. Try again!", timerInstructionStyle);
+                        respawnMessage, timerInstructionStyle);
                     return;
                 }
 

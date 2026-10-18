@@ -1,0 +1,1619 @@
+{
+  "objects": [
+    {
+      "name": "Armature.008",
+      "type": "ARMATURE",
+      "parent": null,
+      "loc": [
+        0.0,
+        3.3248880981773254e-08,
+        -0.20408016443252563
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        5.297667980194092,
+        5.297667980194092,
+        5.297667980194092
+      ],
+      "dims": [
+        6.350112438201904,
+        1.2793776988983154,
+        11.219449043273926
+      ],
+      "hide": false,
+      "bones": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tail": [
+            0.0,
+            0.0,
+            0.2621437907218933
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Control.Hand.L",
+          "parent": "Root",
+          "head": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            0.47870969772338867,
+            0.172451451420784,
+            1.1225792169570923
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IKHand.L",
+          "parent": "IK.Control.Hand.L",
+          "head": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "Copy Location",
+              "type": "COPY_LOCATION",
+              "target": "Armature.008",
+              "subtarget": "IK.LowerArm.L"
+            }
+          ]
+        },
+        {
+          "name": "IK.UpperArm.Pole.L",
+          "parent": "IK.Control.Hand.L",
+          "head": [
+            0.30471113324165344,
+            0.3520863652229309,
+            1.286102056503296
+          ],
+          "tail": [
+            0.2489941567182541,
+            0.47133684158325195,
+            1.2699024677276611
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Control.Hand.R",
+          "parent": "Root",
+          "head": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            -0.47870969772338867,
+            0.172451451420784,
+            1.1225792169570923
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IKHand.R",
+          "parent": "IK.Control.Hand.R",
+          "head": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            -0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "Copy Location",
+              "type": "COPY_LOCATION",
+              "target": "Armature.008",
+              "subtarget": "IK.LowerArm.R"
+            }
+          ]
+        },
+        {
+          "name": "IK.UpperArm.Pole.R",
+          "parent": "IK.Control.Hand.R",
+          "head": [
+            -0.30471113324165344,
+            0.3520863652229309,
+            1.286102056503296
+          ],
+          "tail": [
+            -0.2489941567182541,
+            0.47133684158325195,
+            1.2699024677276611
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.KneePole.L",
+          "parent": "Root",
+          "head": [
+            0.1684267818927765,
+            -0.39149072766304016,
+            0.521150529384613
+          ],
+          "tail": [
+            0.1684267818927765,
+            -0.5878808498382568,
+            0.521150529384613
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Control.Foot.L",
+          "parent": "Root",
+          "head": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            0.4144393801689148,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Foot.L",
+          "parent": "IK.Control.Foot.L",
+          "head": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "Copy Location",
+              "type": "COPY_LOCATION",
+              "target": "Armature.008",
+              "subtarget": "IK.Shin.L"
+            }
+          ]
+        },
+        {
+          "name": "IK.Toes.L",
+          "parent": "IK.Foot.L",
+          "head": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.KneePole.R",
+          "parent": "Root",
+          "head": [
+            -0.1684267818927765,
+            -0.39149072766304016,
+            0.521150529384613
+          ],
+          "tail": [
+            -0.1684267818927765,
+            -0.5878808498382568,
+            0.521150529384613
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Control.Foot.R",
+          "parent": "Root",
+          "head": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            -0.4144393801689148,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Foot.R",
+          "parent": "IK.Control.Foot.R",
+          "head": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "Copy Location",
+              "type": "COPY_LOCATION",
+              "target": "Armature.008",
+              "subtarget": "IK.Shin.R"
+            }
+          ]
+        },
+        {
+          "name": "IK.Toes.R",
+          "parent": "IK.Foot.R",
+          "head": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            -0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "Spine1",
+          "parent": "Root",
+          "head": [
+            0.0,
+            0.02301054075360298,
+            1.1172373294830322
+          ],
+          "tail": [
+            0.0,
+            0.03548160940408707,
+            1.212263584136963
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Spine2",
+          "parent": "Spine1",
+          "head": [
+            0.0,
+            0.03548160940408707,
+            1.212263584136963
+          ],
+          "tail": [
+            0.0,
+            0.04929410666227341,
+            1.2992756366729736
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Spine3",
+          "parent": "Spine2",
+          "head": [
+            0.0,
+            0.04929410666227341,
+            1.2992756366729736
+          ],
+          "tail": [
+            0.0,
+            0.09383969753980637,
+            1.5442832708358765
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Spine4",
+          "parent": "Spine3",
+          "head": [
+            0.0,
+            0.09383969753980637,
+            1.5442832708358765
+          ],
+          "tail": [
+            0.0,
+            0.05649459362030029,
+            1.632440209388733
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Neck",
+          "parent": "Spine4",
+          "head": [
+            0.0,
+            0.05649459362030029,
+            1.632440209388733
+          ],
+          "tail": [
+            0.0,
+            0.013784322887659073,
+            1.7618134021759033
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Head",
+          "parent": "Neck",
+          "head": [
+            0.0,
+            0.013784322887659073,
+            1.7618134021759033
+          ],
+          "tail": [
+            0.0,
+            0.013784322887659073,
+            1.9209538698196411
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK/IKSwitch",
+          "parent": "Neck",
+          "head": [
+            0.0,
+            0.013784322887659073,
+            1.9610912799835205
+          ],
+          "tail": [
+            0.0,
+            0.013784322887659073,
+            2.120231866836548
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "Clav.L",
+          "parent": "Spine3",
+          "head": [
+            0.03171985223889351,
+            -0.04351450502872467,
+            1.5344544649124146
+          ],
+          "tail": [
+            0.16686414182186127,
+            0.035026002675294876,
+            1.5677402019500732
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "UpperArm.L",
+          "parent": "Clav.L",
+          "head": [
+            0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.UpperArm.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.UpperArm.L"
+            }
+          ]
+        },
+        {
+          "name": "LowerArm.L",
+          "parent": "UpperArm.L",
+          "head": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.LowerArm.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.LowerArm.L"
+            }
+          ]
+        },
+        {
+          "name": "Hand.L",
+          "parent": "LowerArm.L",
+          "head": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IKHand.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Hand.L"
+            }
+          ]
+        },
+        {
+          "name": "IK.UpperArm.L",
+          "parent": "Clav.L",
+          "head": [
+            0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.LowerArm.L",
+          "parent": "IK.UpperArm.L",
+          "head": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "IK",
+              "type": "IK",
+              "target": "Armature.008",
+              "subtarget": "IK.Control.Hand.L"
+            }
+          ]
+        },
+        {
+          "name": "FK.UpperArm.L",
+          "parent": "Clav.L",
+          "head": [
+            0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.LowerArm.L",
+          "parent": "FK.UpperArm.L",
+          "head": [
+            0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Hand.L",
+          "parent": "FK.LowerArm.L",
+          "head": [
+            0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "Clav.R",
+          "parent": "Spine3",
+          "head": [
+            -0.03171985223889351,
+            -0.04351450502872467,
+            1.5344544649124146
+          ],
+          "tail": [
+            -0.16686414182186127,
+            0.035026002675294876,
+            1.5677402019500732
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.UpperArm.R",
+          "parent": "Clav.R",
+          "head": [
+            -0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.LowerArm.R",
+          "parent": "FK.UpperArm.R",
+          "head": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Hand.R",
+          "parent": "FK.LowerArm.R",
+          "head": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            -0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "IK.UpperArm.R",
+          "parent": "Clav.R",
+          "head": [
+            -0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.LowerArm.R",
+          "parent": "IK.UpperArm.R",
+          "head": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "IK",
+              "type": "IK",
+              "target": "Armature.008",
+              "subtarget": "IK.Control.Hand.R"
+            }
+          ]
+        },
+        {
+          "name": "UpperArm.R",
+          "parent": "Clav.R",
+          "head": [
+            -0.24601741135120392,
+            0.07607794553041458,
+            1.5029542446136475
+          ],
+          "tail": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.UpperArm.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.UpperArm.R"
+            }
+          ]
+        },
+        {
+          "name": "LowerArm.R",
+          "parent": "UpperArm.R",
+          "head": [
+            -0.4033184349536896,
+            0.057168226689100266,
+            1.286102056503296
+          ],
+          "tail": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.LowerArm.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.LowerArm.R"
+            }
+          ]
+        },
+        {
+          "name": "Hand.R",
+          "parent": "LowerArm.R",
+          "head": [
+            -0.5166025757789612,
+            0.05531633272767067,
+            1.1084438562393188
+          ],
+          "tail": [
+            -0.5993310809135437,
+            0.058401014655828476,
+            0.9781657457351685
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IKHand.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Hand.R"
+            }
+          ]
+        },
+        {
+          "name": "FK.Thigh.L",
+          "parent": "Spine1",
+          "head": [
+            0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Shin.L",
+          "parent": "FK.Thigh.L",
+          "head": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Foot.L",
+          "parent": "FK.Shin.L",
+          "head": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Toes.L",
+          "parent": "FK.Foot.L",
+          "head": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Thigh.R",
+          "parent": "Spine1",
+          "head": [
+            -0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Shin.R",
+          "parent": "FK.Thigh.R",
+          "head": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Foot.R",
+          "parent": "FK.Shin.R",
+          "head": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "FK.Toes.R",
+          "parent": "FK.Foot.R",
+          "head": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            -0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "bone.Pelvis",
+          "parent": "Root",
+          "head": [
+            -0.002169716637581587,
+            -0.025887254625558853,
+            0.9886648058891296
+          ],
+          "tail": [
+            -0.002169716637581587,
+            0.01982905901968479,
+            1.1172373294830322
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "Pelvis.DEF",
+          "parent": "bone.Pelvis",
+          "head": [
+            0.0,
+            0.02301054075360298,
+            1.1172373294830322
+          ],
+          "tail": [
+            -0.002169716637581587,
+            -0.025887254625558853,
+            0.9886648058891296
+          ],
+          "deform": true,
+          "constraints": []
+        },
+        {
+          "name": "IK.Thigh.L",
+          "parent": "Pelvis.DEF",
+          "head": [
+            0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Shin.L",
+          "parent": "IK.Thigh.L",
+          "head": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "IK",
+              "type": "IK",
+              "target": "Armature.008",
+              "subtarget": "IK.Control.Foot.L"
+            }
+          ]
+        },
+        {
+          "name": "IK.Thigh.R",
+          "parent": "Pelvis.DEF",
+          "head": [
+            -0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": false,
+          "constraints": []
+        },
+        {
+          "name": "IK.Shin.R",
+          "parent": "IK.Thigh.R",
+          "head": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": false,
+          "constraints": [
+            {
+              "name": "IK",
+              "type": "IK",
+              "target": "Armature.008",
+              "subtarget": "IK.Control.Foot.R"
+            }
+          ]
+        },
+        {
+          "name": "Thigh.L",
+          "parent": "Pelvis.DEF",
+          "head": [
+            0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Thigh.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Thigh.L"
+            }
+          ]
+        },
+        {
+          "name": "Shin.L",
+          "parent": "Thigh.L",
+          "head": [
+            0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Shin.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Shin.L"
+            }
+          ]
+        },
+        {
+          "name": "Foot.L",
+          "parent": "Shin.L",
+          "head": [
+            0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Foot.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Foot.L"
+            }
+          ]
+        },
+        {
+          "name": "Toes.L",
+          "parent": "Foot.L",
+          "head": [
+            0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Toes.L"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Toes.L"
+            }
+          ]
+        },
+        {
+          "name": "Thigh.R",
+          "parent": "Pelvis.DEF",
+          "head": [
+            -0.09194465726613998,
+            0.028658078983426094,
+            1.0024642944335938
+          ],
+          "tail": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Thigh.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Thigh.R"
+            }
+          ]
+        },
+        {
+          "name": "Shin.R",
+          "parent": "Thigh.R",
+          "head": [
+            -0.1684267818927765,
+            0.05380488559603691,
+            0.5154708623886108
+          ],
+          "tail": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Shin.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Shin.R"
+            }
+          ]
+        },
+        {
+          "name": "Foot.R",
+          "parent": "Shin.R",
+          "head": [
+            -0.23136009275913239,
+            0.08593454211950302,
+            0.1075022891163826
+          ],
+          "tail": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Foot.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Foot.R"
+            }
+          ]
+        },
+        {
+          "name": "Toes.R",
+          "parent": "Foot.R",
+          "head": [
+            -0.25568240880966187,
+            -0.05213169753551483,
+            0.0024226736277341843
+          ],
+          "tail": [
+            -0.26939940452575684,
+            -0.14765861630439758,
+            0.0024226736277341843
+          ],
+          "deform": true,
+          "constraints": [
+            {
+              "name": "Copy Transforms",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "IK.Toes.R"
+            },
+            {
+              "name": "Copy Transforms.001",
+              "type": "COPY_TRANSFORMS",
+              "target": "Armature.008",
+              "subtarget": "FK.Toes.R"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CNTRL_Circle",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        2.0,
+        2.0,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 48,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_Foot",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        1.1307944059371948,
+        1.9599343538284302,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 48,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_HalfCircle",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        2.0,
+        1.0,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 25,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_Hand",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        1.1307942867279053,
+        1.3892117738723755,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 27,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_PointyCircle",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        2.7897379398345947,
+        3.05281662940979,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 48,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_Sphere",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "hide": false,
+      "vertices": 240,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "CNTRL_Square",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        2.0,
+        2.0,
+        0.0
+      ],
+      "hide": false,
+      "vertices": 4,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "Empty",
+      "type": "EMPTY",
+      "parent": null,
+      "loc": [
+        0.06581257283687592,
+        5.209075450897217,
+        4.800440788269043
+      ],
+      "rot": [
+        1.5707964897155762,
+        -0.0,
+        -0.0
+      ],
+      "scale": [
+        2.2311854362487793,
+        2.2311854362487793,
+        1.0
+      ],
+      "dims": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hide": false
+    },
+    {
+      "name": "Empty.001",
+      "type": "EMPTY",
+      "parent": null,
+      "loc": [
+        8.640369415283203,
+        -0.005197837948799133,
+        4.8003997802734375
+      ],
+      "rot": [
+        1.5707963705062866,
+        -0.0,
+        -1.5707963705062866
+      ],
+      "scale": [
+        2.240447759628296,
+        2.240447759628296,
+        1.0
+      ],
+      "dims": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hide": false
+    },
+    {
+      "name": "HIGHPOLY",
+      "type": "MESH",
+      "parent": null,
+      "loc": [
+        0.005196724086999893,
+        -0.0012707029236480594,
+        7.494695663452148
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        6.861940383911133,
+        2.1683249473571777,
+        10.529722213745117
+      ],
+      "hide": false,
+      "vertices": 1901536,
+      "groups": [],
+      "mods": []
+    },
+    {
+      "name": "LowPoly",
+      "type": "MESH",
+      "parent": "Armature.008",
+      "loc": [
+        0.005196724086999893,
+        -0.0012707029236480594,
+        7.494695663452148
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dims": [
+        6.927237033843994,
+        2.2454185485839844,
+        10.566340446472168
+      ],
+      "hide": false,
+      "vertices": 1570,
+      "groups": [
+        "Spine1",
+        "Spine2",
+        "Spine3",
+        "Spine4",
+        "Neck",
+        "Head",
+        "Clav.L",
+        "UpperArm.L",
+        "LowerArm.L",
+        "Hand.L",
+        "FK.UpperArm.L",
+        "FK.LowerArm.L",
+        "FK.Hand.L",
+        "Clav.R",
+        "FK.UpperArm.R",
+        "FK.LowerArm.R",
+        "FK.Hand.R",
+        "UpperArm.R",
+        "LowerArm.R",
+        "Hand.R",
+        "FK.Thigh.L",
+        "FK.Shin.L",
+        "FK.Foot.L",
+        "FK.Toes.L",
+        "FK.Thigh.R",
+        "FK.Shin.R",
+        "FK.Foot.R",
+        "FK.Toes.R",
+        "Pelvis.DEF",
+        "Thigh.L",
+        "Shin.L",
+        "Foot.L",
+        "Toes.L",
+        "Thigh.R",
+        "Shin.R",
+        "Foot.R",
+        "Toes.R"
+      ],
+      "mods": [
+        {
+          "type": "ARMATURE",
+          "object": "Armature.008"
+        }
+      ]
+    }
+  ],
+  "actions": []
+}
