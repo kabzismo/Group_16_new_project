@@ -27,6 +27,7 @@ namespace FPSStarter
             StripPlayerPhysicsConflicts();
             RemoveBlockingGroundPlanes();
             RepairMeshColliders();
+            if (IsStage2(sceneName)) RepairWallColliders();
             PrepareAnimatedDoors();
             PrepareChests();
 
@@ -40,6 +41,7 @@ namespace FPSStarter
                 EnsureHotFloorHazard();
                 EnsureStage2SafetyFloor();
                 EnableStage2EnvironmentalRooms();
+                EnsureHighGravityEnemy();
                 EnsureStage2DoorBootstrapper();
                 EnsureKeyHunt();
                 UnstickPlayer();
@@ -130,6 +132,17 @@ namespace FPSStarter
                 player.gameObject.AddComponent<GroundHazardRespawn>();
         }
 
+        private static void EnsureHighGravityEnemy()
+        {
+            if (Object.FindFirstObjectByType<HighGravityEnemy>() != null) return;
+            foreach (RoomMechanicVolume room in Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
+            {
+                if (room.Mechanic != RoomMechanic.HighGravity) continue;
+                new GameObject("High Gravity Enemy Settings").AddComponent<HighGravityEnemy>().Configure(room);
+                return;
+            }
+        }
+
         private static void ConfigureStage2Movement()
         {
             FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
@@ -188,6 +201,20 @@ namespace FPSStarter
             }
         }
 
+        private static void RepairWallColliders()
+        {
+            foreach (MeshCollider wall in Object.FindObjectsByType<MeshCollider>(FindObjectsSortMode.None))
+            {
+                if (!wall.enabled || wall.sharedMesh == null || wall.convex ||
+                    !wall.name.ToLowerInvariant().Contains("wall")) continue;
+
+                // A box around a concave wall mesh fills the room and seals
+                // its door openings. Keep the detailed wall mesh as collision.
+                foreach (BoxCollider box in wall.GetComponents<BoxCollider>())
+                    box.enabled = false;
+            }
+        }
+
         internal static void PrepareAnimatedDoors()
         {
             Transform[] transforms = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None);
@@ -199,7 +226,6 @@ namespace FPSStarter
 
                 DoorOutward door = CreateConventionalHingedDoor(transform.gameObject);
                 if (door == null) continue;
-                EnsureInteractableCollider(transform.gameObject);
                 EnsureBoxDoorCollider(transform.gameObject);
             }
         }
@@ -321,10 +347,14 @@ namespace FPSStarter
             box.enabled = true;
             box.isTrigger = false;
 
-            Bounds bounds = renderer.bounds;
-            box.center = door.transform.InverseTransformPoint(bounds.center);
-            Vector3 size = door.transform.InverseTransformVector(bounds.size);
+            // Use local mesh bounds. Transforming a world-aligned bounding
+            // box back into a rotated/scaled panel can inflate its collider.
+            MeshFilter filter = door.GetComponent<MeshFilter>();
+            Bounds bounds = filter != null && filter.sharedMesh != null ? filter.sharedMesh.bounds : renderer.localBounds;
+            box.center = bounds.center;
+            Vector3 size = bounds.size;
             box.size = new Vector3(Mathf.Max(0.05f, Mathf.Abs(size.x)), Mathf.Max(0.05f, Mathf.Abs(size.y)), Mathf.Max(0.05f, Mathf.Abs(size.z)));
+            foreach (MeshCollider duplicate in door.GetComponents<MeshCollider>()) duplicate.enabled = false;
         }
 
         private static bool HasBool(Animator animator, string parameterName)
