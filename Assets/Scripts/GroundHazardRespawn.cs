@@ -136,7 +136,9 @@ namespace FPSStarter
             Vector3 safeSide = widthAlongX ? Vector3.forward : Vector3.right;
             if (Vector3.Dot(iceCollider.bounds.center - closedDoorBounds.center, safeSide) < 0f) safeSide = -safeSide;
             float halfThickness = widthAlongX ? closedDoorBounds.extents.z : closedDoorBounds.extents.x;
-            float radius = GetComponent<CharacterController>().radius;
+            CharacterController capsule = GetComponent<CharacterController>();
+            Vector3 scale = transform.lossyScale;
+            float radius = capsule.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
             doorRespawnPosition = closedDoorBounds.center + safeSide * (halfThickness + radius + entranceRespawnOffset);
             doorRespawnPosition.y = closedDoorBounds.min.y + 0.08f;
             doorRespawnRotation = Quaternion.LookRotation(-safeSide, Vector3.up);

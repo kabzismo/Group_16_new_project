@@ -4,9 +4,10 @@ using UnityEngine.AI;
 
 namespace FPSStarter
 {
-    /// <summary>A room-bound pursuer with a navigation mesh built from the loaded room.</summary>
+    /// <summary>The High Gravity room pursuer with navigation built from the loaded room.</summary>
     public sealed class HighGravityEnemy : MonoBehaviour
     {
+        [Tooltip("The High Gravity room the enemy patrols and chases inside.")]
         [SerializeField] private RoomMechanicVolume room;
         [Tooltip("Saved scene character, visible and positionable before Play mode.")]
         [SerializeField] private Transform enemyActor;
@@ -41,10 +42,11 @@ namespace FPSStarter
         private void Start()
         {
             player = FindFirstObjectByType<FirstPersonController>();
-            if (room == null)
+            // Correct scenes that still assign the enemy to the Low Gravity volume.
+            if (room == null || room.Mechanic != RoomMechanic.HighGravity)
                 foreach (RoomMechanicVolume volume in FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
                     if (volume.Mechanic == RoomMechanic.HighGravity) { room = volume; break; }
-            if (player == null || room == null) { enabled = false; return; }
+            if (player == null || room == null || room.Mechanic != RoomMechanic.HighGravity) { enabled = false; return; }
             playerBody = player.GetComponent<CharacterController>();
             respawn = player.GetComponent<GroundHazardRespawn>();
             if (respawn == null) respawn = player.gameObject.AddComponent<GroundHazardRespawn>();
@@ -125,6 +127,7 @@ namespace FPSStarter
             GameObject actor = enemyActor != null ? enemyActor.gameObject : new GameObject("High Gravity Chaser");
             createdActor = enemyActor == null;
             enemyActor = actor.transform;
+            actor.SetActive(true);
             actor.transform.position = home;
             agent = actor.GetComponent<NavMeshAgent>();
             if (agent == null) agent = actor.AddComponent<NavMeshAgent>();
@@ -174,14 +177,37 @@ namespace FPSStarter
             if (Time.time >= nextPathUpdate)
             {
                 nextPathUpdate = Time.time + 0.2f;
-                if (NavMesh.SamplePosition(player.transform.position, out NavMeshHit target, 1.5f, NavMesh.AllAreas) && InsideRoom(target.position))
-                    agent.SetDestination(target.position);
+                if (TryFindPlayerFloor(out Vector3 target)) agent.SetDestination(target);
             }
             if (CanCatchPlayer() && respawn.TryRespawnAtDoor("The enemy caught you. Try again!"))
             {
                 catchCooldownUntil = Time.time + 2f;
                 ResetEnemy();
             }
+        }
+
+        private bool TryFindPlayerFloor(out Vector3 position)
+        {
+            if (NavMesh.SamplePosition(player.transform.position, out NavMeshHit nearby, 1.5f, NavMesh.AllAreas) && InsideRoom(nearby.position))
+            {
+                position = nearby.position;
+                return true;
+            }
+
+            // Jumping onto obstacles can put the player above the NavMesh.
+            // Keep following their floor position, but only catch at body height.
+            position = default;
+            float highestFloor = float.NegativeInfinity;
+            foreach (RaycastHit floor in Physics.RaycastAll(playerBody.bounds.center, Vector3.down, roomBounds.size.y, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (floor.normal.y < 0.7f || floor.collider.transform.IsChildOf(player.transform) ||
+                    floor.collider.transform.IsChildOf(enemyActor) || IsRoof(floor.collider.transform)) continue;
+                if (floor.point.y <= highestFloor || !NavMesh.SamplePosition(floor.point, out NavMeshHit sample, 0.6f, NavMesh.AllAreas) ||
+                    !InsideRoom(sample.position)) continue;
+                highestFloor = floor.point.y;
+                position = sample.position;
+            }
+            return highestFloor > float.NegativeInfinity;
         }
 
         private bool CanCatchPlayer()

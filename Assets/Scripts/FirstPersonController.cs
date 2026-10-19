@@ -45,8 +45,12 @@ namespace FPSStarter
         private float standingHeight;
         private Vector3 standingCenter;
         private Vector3 standingViewPosition;
+        private Vector3 viewPositionVelocity;
+        private bool groundedSupport;
+        private readonly RaycastHit[] supportHits = new RaycastHit[24];
+        private readonly Collider[] postureOverlaps = new Collider[24];
 
-        public bool IsGrounded => controller != null && controller.isGrounded;
+        public bool IsGrounded => controller != null && controller.enabled && groundedSupport;
         public float NormalMoveSpeed => moveSpeed;
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
@@ -74,6 +78,7 @@ namespace FPSStarter
             verticalVelocity = 0f;
             horizontalVelocity = Vector3.zero;
             targetHorizontalVelocity = Vector3.zero;
+            groundedSupport = false;
             activeRoomVolumes.Clear();
             activeRoomVolume = null;
             currentMechanic = RoomMechanic.None;
@@ -183,6 +188,7 @@ namespace FPSStarter
             float effectiveGravity = gravity * (currentMechanic == RoomMechanic.LowGravity ? lowGravityMultiplier : 1f) * roomGravityMultiplier;
             float effectiveJumpHeight = jumpHeight * (currentMechanic == RoomMechanic.LowGravity ? lowGravityJumpMultiplier : 1f);
             bool grounded = CheckGrounded();
+            groundedSupport = grounded;
             bool standingOnBox = currentMechanic == RoomMechanic.Ice && verticalVelocity <= 0f && IsStandingOnBox();
             if (grounded && verticalVelocity < 0f) verticalVelocity = -2f;
             bool jump = (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
@@ -205,7 +211,12 @@ namespace FPSStarter
             }
             else
                 horizontalVelocity = targetVelocity;
-            controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
+            CollisionFlags collisions = controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
+            // A low ceiling must end the ascent immediately, not hold the
+            // player against its underside until the original jump expires.
+            if ((collisions & CollisionFlags.Above) != 0 && verticalVelocity > 0f)
+                verticalVelocity = 0f;
+            groundedSupport = CheckGrounded();
         }
 
         private static Vector2 ReadMovementInput(Keyboard keyboard)
@@ -227,24 +238,70 @@ namespace FPSStarter
 
         private bool CheckGrounded()
         {
-            if (controller.isGrounded) return true;
-            float radius = Mathf.Max(0.08f, controller.radius * 0.9f);
-            Vector3 origin = transform.TransformPoint(controller.center) + Vector3.down * (controller.height * 0.5f - radius);
-            return Physics.SphereCast(origin, radius, Vector3.down, out _, controller.skinWidth + 0.12f, ~0, QueryTriggerInteraction.Ignore);
+            return verticalVelocity <= 0f && TryGetSupport(out _);
         }
 
         private bool IsStandingOnBox()
         {
-            float radius = Mathf.Max(0.08f, controller.radius * 0.9f);
-            Vector3 origin = transform.TransformPoint(controller.center) + Vector3.down * (controller.height * 0.5f - radius);
-            float distance = radius + controller.skinWidth + 0.12f;
-            // The ray also works when the bottom sphere already overlaps the
-            // supporting surface, which prevents flickering traction on landing.
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, distance, ~0, QueryTriggerInteraction.Ignore) &&
-                hit.normal.y > 0.5f && IsBoxSurface(hit.collider)) return true;
+            return TryGetSupport(out RaycastHit hit) && IsBoxSurface(hit.collider);
+        }
 
-            return Physics.SphereCast(origin, radius, Vector3.down, out hit, controller.skinWidth + 0.12f, ~0, QueryTriggerInteraction.Ignore) &&
-                   hit.normal.y > 0.5f && IsBoxSurface(hit.collider);
+        private bool TryGetSupport(out RaycastHit support)
+        {
+            support = default;
+            GetWorldCapsule(controller.height, controller.center, out Vector3 bottom, out _, out float radius);
+            Vector3 up = transform.up;
+            float probeRadius = radius * 0.9f;
+            float lift = WorldSkinWidth + 0.03f;
+            Vector3 origin = bottom - up * (radius - probeRadius) + up * lift;
+            float distance = lift + WorldSkinWidth + 0.06f;
+            float minimumNormal = Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad);
+            float nearest = float.PositiveInfinity;
+
+            int count = Physics.SphereCastNonAlloc(origin, probeRadius, -up, supportHits, distance, ~0, QueryTriggerInteraction.Ignore);
+            SelectSupport(count, minimumNormal, ref nearest, ref support);
+            // The centre ray also finds support when the sphere begins inside
+            // a surface by the controller's permitted skin-width penetration.
+            count = Physics.RaycastNonAlloc(origin, -up, supportHits, distance + probeRadius, ~0, QueryTriggerInteraction.Ignore);
+            SelectSupport(count, minimumNormal, ref nearest, ref support);
+            return support.collider != null;
+        }
+
+        private void SelectSupport(int count, float minimumNormal, ref float nearest, ref RaycastHit support)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit hit = supportHits[i];
+                if (IsPlayerCollider(hit.collider) || Vector3.Dot(hit.normal, transform.up) < minimumNormal || hit.distance >= nearest)
+                    continue;
+                nearest = hit.distance;
+                support = hit;
+            }
+        }
+
+        private bool IsPlayerCollider(Collider collider)
+        {
+            return collider == null || collider.transform == transform || collider.transform.IsChildOf(transform);
+        }
+
+        private float WorldSkinWidth
+        {
+            get
+            {
+                Vector3 scale = transform.lossyScale;
+                return controller.skinWidth * Mathf.Max(Mathf.Abs(scale.x), Mathf.Max(Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+            }
+        }
+
+        private void GetWorldCapsule(float height, Vector3 center, out Vector3 bottom, out Vector3 top, out float radius)
+        {
+            Vector3 scale = transform.lossyScale;
+            radius = controller.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float halfHeight = Mathf.Max(radius, height * Mathf.Abs(scale.y) * 0.5f);
+            Vector3 worldCenter = transform.TransformPoint(center);
+            Vector3 offset = transform.up * (halfHeight - radius);
+            bottom = worldCenter - offset;
+            top = worldCenter + offset;
         }
 
         private static bool IsBoxSurface(Collider surface)
@@ -276,9 +333,33 @@ namespace FPSStarter
             float targetHeight = highGravity ? standingHeight * highGravityCrouchHeightMultiplier : standingHeight;
             if (crouching) targetHeight *= highGravity ? 0.62f : highGravityCrouchHeightMultiplier;
             float heightDifference = targetHeight - standingHeight;
-            controller.height = targetHeight;
-            controller.center = standingCenter + Vector3.up * (heightDifference * 0.5f);
-            if (view != null) view.localPosition = standingViewPosition + Vector3.up * heightDifference;
+            Vector3 targetCenter = standingCenter + Vector3.up * (heightDifference * 0.5f);
+            if (targetHeight <= controller.height || CanExpandPosture(targetHeight, targetCenter))
+            {
+                // Avoid rebuilding the capsule while its posture is unchanged.
+                if (!Mathf.Approximately(controller.height, targetHeight)) controller.height = targetHeight;
+                if (controller.center != targetCenter) controller.center = targetCenter;
+            }
+            // If headroom blocks standing, keep the eye height at the actual
+            // capsule posture and ease into changes instead of snapping upward.
+            if (view != null && view != transform)
+            {
+                Vector3 targetView = standingViewPosition + Vector3.up * (controller.height - standingHeight);
+                view.localPosition = Vector3.SmoothDamp(view.localPosition, targetView, ref viewPositionVelocity, 0.06f);
+            }
+        }
+
+        private bool CanExpandPosture(float targetHeight, Vector3 targetCenter)
+        {
+            GetWorldCapsule(controller.height, controller.center, out _, out Vector3 currentTop, out float radius);
+            GetWorldCapsule(targetHeight, targetCenter, out _, out Vector3 targetTop, out _);
+            // Only the newly occupied head space is tested. Checking the whole
+            // capsule would incorrectly treat the supporting floor as a ceiling.
+            float queryRadius = Mathf.Max(0.01f, radius - WorldSkinWidth - 0.01f);
+            int count = Physics.OverlapCapsuleNonAlloc(currentTop, targetTop, queryRadius, postureOverlaps, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+                if (!IsPlayerCollider(postureOverlaps[i])) return false;
+            return count < postureOverlaps.Length;
         }
 
         private void CreateHoldPoint()
