@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,32 +9,37 @@ public class Dialogue : MonoBehaviour
 {
     public TextMeshProUGUI textComponent;
     public string[] lines;
-    public float textSpeed;
+    public float textSpeed = 0.03f;
 
     public Image characterImage;
+
+    // The actual dialogue UI panel
+    public GameObject dialoguePanel;
 
     // Panel that appears after the dialogue is finished
     public GameObject levelChoicePanel;
 
     private int index;
     private bool isTyping;
+    private bool isActive;
 
     void Start()
     {
         textComponent.text = string.Empty;
 
-        // Show character at the start
-        characterImage.gameObject.SetActive(true);
-
-        // Make sure level choice panel is hidden
+        // Hide everything at the start
+        characterImage.gameObject.SetActive(false);
+        dialoguePanel.SetActive(false);
         levelChoicePanel.SetActive(false);
-
-        StartDialogue();
     }
 
     void Update()
     {
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        if (!isActive)
+            return;
+
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (isTyping)
             {
@@ -51,9 +57,26 @@ public class Dialogue : MonoBehaviour
         }
     }
 
-    void StartDialogue()
+    public void StartDialogue()
     {
+        if (lines == null || lines.Length == 0)
+        {
+            Debug.LogWarning("Dialogue has no lines assigned.");
+            return;
+        }
+
+        StopAllCoroutines();
+
         index = 0;
+        isTyping = false;
+        isActive = true;
+
+        textComponent.text = string.Empty;
+
+        dialoguePanel.SetActive(true);
+        characterImage.gameObject.SetActive(true);
+        levelChoicePanel.SetActive(false);
+
         StartCoroutine(TypeLine());
     }
 
@@ -66,7 +89,7 @@ public class Dialogue : MonoBehaviour
         {
             textComponent.text += c;
 
-            yield return new WaitForSeconds(textSpeed);
+            yield return new WaitForSecondsRealtime(textSpeed);
         }
 
         isTyping = false;
@@ -74,26 +97,22 @@ public class Dialogue : MonoBehaviour
 
     void NextLine()
     {
-        // If there are still lines left
         if (index < lines.Length - 1)
         {
             index++;
-
-            textComponent.text = string.Empty;
-
             StartCoroutine(TypeLine());
         }
         else
         {
-            // Dialogue is completely finished
+            // Dialogue is finished
+            isActive = false;
 
-            // Hide the character
+            StopAllCoroutines();
+
             characterImage.gameObject.SetActive(false);
+            dialoguePanel.SetActive(false);
 
-            // Hide the dialogue panel
-            gameObject.SetActive(false);
-
-            // Show the level choice panel
+            // Show the option to continue to the first level
             levelChoicePanel.SetActive(true);
         }
     }
