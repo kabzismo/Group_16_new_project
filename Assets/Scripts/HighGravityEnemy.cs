@@ -8,6 +8,8 @@ namespace FPSStarter
     public sealed class HighGravityEnemy : MonoBehaviour
     {
         [SerializeField] private RoomMechanicVolume room;
+        [Tooltip("Saved scene character, visible and positionable before Play mode.")]
+        [SerializeField] private Transform enemyActor;
         [Tooltip("Fraction of the player's normal, uncrouched walking speed.")]
         [SerializeField, Range(0.01f, 1f)] private float walkSpeedMultiplier = 0.35f;
         [SerializeField, Min(0.1f)] private float catchDistance = 0.8f;
@@ -27,11 +29,12 @@ namespace FPSStarter
         private float nextPathUpdate;
         private float catchCooldownUntil;
         private bool chasing;
+        private bool createdActor;
 
         public bool IsReady => agent != null && agent.isOnNavMesh;
         public bool IsChasing => chasing;
         public float WalkSpeed => player != null ? player.NormalMoveSpeed * walkSpeedMultiplier : 0f;
-        public Transform EnemyTransform => agent != null ? agent.transform : null;
+        public Transform EnemyTransform => agent != null ? agent.transform : enemyActor;
 
         public void Configure(RoomMechanicVolume volume) => room = volume;
 
@@ -65,6 +68,7 @@ namespace FPSStarter
                 new List<NavMeshBuildMarkup>(), sources);
             sources.RemoveAll(source => source.component != null &&
                 (source.component.transform.IsChildOf(player.transform) ||
+                 (enemyActor != null && source.component.transform.IsChildOf(enemyActor)) ||
                  source.component.GetComponentInParent<CarryableObject>() != null ||
                  source.component is Collider collider && collider.isTrigger));
             NavMeshBuildSettings settings = NavMesh.GetSettingsByIndex(0);
@@ -84,6 +88,15 @@ namespace FPSStarter
 
         private bool FindHome(out Vector3 position)
         {
+            // Respect the saved character's position whenever it is walkable.
+            // This lets the designer place it in the Scene view before Play.
+            if (enemyActor != null && NavMesh.SamplePosition(enemyActor.position, out NavMeshHit authoredHome, 1.5f, NavMesh.AllAreas) &&
+                InsideRoom(authoredHome.position))
+            {
+                position = authoredHome.position;
+                return true;
+            }
+
             // Search the room's floor, not the roof or the top of its trigger.
             // Keep the enemy away from the player's approach when it first spawns.
             position = default;
@@ -109,9 +122,12 @@ namespace FPSStarter
         private void CreateEnemy()
         {
             // Use a world-space root: room trigger transforms are heavily scaled.
-            GameObject actor = new GameObject("High Gravity Chaser");
+            GameObject actor = enemyActor != null ? enemyActor.gameObject : new GameObject("High Gravity Chaser");
+            createdActor = enemyActor == null;
+            enemyActor = actor.transform;
             actor.transform.position = home;
-            agent = actor.AddComponent<NavMeshAgent>();
+            agent = actor.GetComponent<NavMeshAgent>();
+            if (agent == null) agent = actor.AddComponent<NavMeshAgent>();
             agent.radius = Radius;
             agent.height = Height;
             agent.baseOffset = 0f;
@@ -121,6 +137,7 @@ namespace FPSStarter
             agent.stoppingDistance = 0.05f;
             agent.autoTraverseOffMeshLink = false;
             agent.Warp(home);
+            if (!createdActor) return;
             MakePart(actor.transform, "Body", PrimitiveType.Capsule, new Vector3(0f, 0.55f, 0f), new Vector3(0.64f, 0.55f, 0.64f), bodyColor);
             MakePart(actor.transform, "Left Eye", PrimitiveType.Sphere, new Vector3(-0.12f, 0.83f, 0.285f), Vector3.one * 0.11f, eyeColor);
             MakePart(actor.transform, "Right Eye", PrimitiveType.Sphere, new Vector3(0.12f, 0.83f, 0.285f), Vector3.one * 0.11f, eyeColor);
@@ -212,7 +229,11 @@ namespace FPSStarter
 
         private void OnDestroy()
         {
-            if (agent != null) Destroy(agent.gameObject);
+            if (agent != null)
+            {
+                if (createdActor) Destroy(agent.gameObject);
+                else Destroy(agent);
+            }
             if (navMeshInstance.valid) navMeshInstance.Remove();
             if (navMesh != null) Destroy(navMesh);
         }
