@@ -23,12 +23,25 @@ namespace FPSStarter
         [SerializeField] private Color timerPanelColor = new Color(0.055f, 0.065f, 0.08f, 0.95f);
         [SerializeField] private Color timerAccentColor = new Color(1f, 0.58f, 0.24f, 1f);
         [SerializeField] private Color timerDangerColor = new Color(1f, 0.2f, 0.15f, 1f);
+        [SerializeField] private Color timerValueColor = Color.white;
+        [SerializeField] private Color timerInstructionColor = new Color(0.83f, 0.85f, 0.88f);
         [SerializeField, Min(0f)] private float timerTopMargin = 72f;
+
+        [Header("Timer Custom Artwork (Optional)")]
+        [Tooltip("Your panel artwork, drawn behind the live text. Design for 400 x 116 pixels; leave empty for the default panel.")]
+        [SerializeField] private Texture2D timerPanelArtwork;
+        [Tooltip("Your progress-bar background, drawn in a 360 x 6 pixel area. Transparent PNGs are supported.")]
+        [SerializeField] private Texture2D timerBarTrackArtwork;
+        [Tooltip("Your full progress bar. It is revealed from left to right and cropped as time runs out, without stretching the design.")]
+        [SerializeField] private Texture2D timerBarFillArtwork;
+        [Tooltip("Apply the accent/danger colour to custom bar-fill artwork. Leave off to preserve your artwork's original colours.")]
+        [SerializeField] private bool tintTimerBarArtwork;
 
         private FirstPersonController player;
         private RoomMechanicVolume iceRoom;
         private float groundTime;
         private float respawnMessageUntil;
+        private string respawnMessage = "The lava got you. Try again!";
         private Bounds closedDoorBounds;
         private Vector3 doorRespawnPosition;
         private Quaternion doorRespawnRotation;
@@ -67,12 +80,20 @@ namespace FPSStarter
 
         private void RespawnAtEntrance()
         {
+            TryRespawnAtDoor("The lava got you. Try again!");
+        }
+
+        /// <summary>Shared death checkpoint for room hazards and enemy catches.</summary>
+        public bool TryRespawnAtDoor(string message)
+        {
             groundTime = 0f;
-            if (!hasDoorRespawn && !CacheDoorRespawn()) return;
+            if (!hasDoorRespawn && !CacheDoorRespawn()) return false;
 
             player.RespawnAt(GetDoorFloorPosition(), doorRespawnRotation, iceRoom);
             Physics.SyncTransforms();
+            respawnMessage = message;
             respawnMessageUntil = Time.time + 1.5f;
+            return true;
         }
 
         private bool CacheDoorRespawn()
@@ -204,7 +225,10 @@ namespace FPSStarter
                 Color accent = urgent ? timerDangerColor : timerAccentColor;
                 if (urgent)
                     accent = Color.Lerp(timerDangerColor, timerAccentColor, (Mathf.Sin(Time.unscaledTime * 8f) + 1f) * 0.15f);
-                RoomHudGraphics.Panel(panel, timerPanelColor, accent);
+                if (timerPanelArtwork != null)
+                    DrawTimerArtwork(panel, timerPanelArtwork, Color.white);
+                else
+                    RoomHudGraphics.Panel(panel, timerPanelColor, accent);
                 EnsureTimerStyles(accent);
                 GUI.Label(new Rect(panel.x + 20f, panel.y + 13f, showingRespawn ? 360f : 160f, 24f),
                     showingRespawn ? "BACK BY " + respawnDoorName.ToUpperInvariant() : timerHeading, timerHeadingStyle);
@@ -212,7 +236,7 @@ namespace FPSStarter
                 if (showingRespawn)
                 {
                     GUI.Label(new Rect(panel.x + 20f, panel.y + 44f, 360f, 34f),
-                        "The lava got you. Try again!", timerInstructionStyle);
+                        respawnMessage, timerInstructionStyle);
                     return;
                 }
 
@@ -221,8 +245,15 @@ namespace FPSStarter
                 GUI.Label(new Rect(panel.x + 20f, panel.y + 39f, 180f, 46f), remaining.ToString("0.0") + "s", timerValueStyle);
                 GUI.Label(new Rect(panel.x + 210f, panel.y + 48f, 170f, 28f), "JUMP TO RESET", timerInstructionStyle);
                 Rect track = new Rect(panel.x + 20f, panel.y + 96f, 360f, 6f);
-                RoomHudGraphics.Fill(track, new Color(1f, 1f, 1f, 0.1f));
-                RoomHudGraphics.Fill(new Rect(track.x, track.y, track.width * fraction, track.height), accent);
+                if (timerBarTrackArtwork != null)
+                    DrawTimerArtwork(track, timerBarTrackArtwork, Color.white);
+                else
+                    RoomHudGraphics.Fill(track, new Color(1f, 1f, 1f, 0.1f));
+
+                if (timerBarFillArtwork != null)
+                    DrawTimerArtwork(track, timerBarFillArtwork, tintTimerBarArtwork ? accent : Color.white, fraction);
+                else
+                    RoomHudGraphics.Fill(new Rect(track.x, track.y, track.width * fraction, track.height), accent);
             }
             finally
             {
@@ -231,12 +262,23 @@ namespace FPSStarter
             }
         }
 
+        private static void DrawTimerArtwork(Rect rect, Texture2D artwork, Color tint, float fraction = 1f)
+        {
+            fraction = Mathf.Clamp01(fraction);
+            if (fraction <= 0f) return;
+            Color previousColor = GUI.color;
+            GUI.color = tint;
+            rect.width *= fraction;
+            GUI.DrawTextureWithTexCoords(rect, artwork, new Rect(0f, 0f, fraction, 1f), true);
+            GUI.color = previousColor;
+        }
+
         private void EnsureTimerStyles(Color accent)
         {
             RoomHudGraphics.LabelStyle(ref timerHeadingStyle, 14, accent, TextAnchor.MiddleLeft, timerFont, true);
-            RoomHudGraphics.LabelStyle(ref timerValueStyle, 34, Color.white, TextAnchor.MiddleLeft, timerFont, true);
+            RoomHudGraphics.LabelStyle(ref timerValueStyle, 34, timerValueColor, TextAnchor.MiddleLeft, timerFont, true);
             RoomHudGraphics.LabelStyle(ref timerStatusStyle, 12, accent, TextAnchor.MiddleRight, timerFont, true);
-            RoomHudGraphics.LabelStyle(ref timerInstructionStyle, 14, new Color(0.83f, 0.85f, 0.88f), TextAnchor.MiddleLeft, timerFont);
+            RoomHudGraphics.LabelStyle(ref timerInstructionStyle, 14, timerInstructionColor, TextAnchor.MiddleLeft, timerFont);
         }
     }
 }

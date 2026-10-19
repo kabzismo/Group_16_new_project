@@ -1,0 +1,12 @@
+{
+  "merged_weight_assignments": 89,
+  "actions": {
+    "Idle_Loop": {
+      "loop_matrix_error": 0.0
+    },
+    "Walk_Loop": {
+      "loop_matrix_error": 0.0
+    }
+  },
+  "invalid_drivers": []
+}

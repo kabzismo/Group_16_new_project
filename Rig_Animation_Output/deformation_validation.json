@@ -1,0 +1,15 @@
+{
+  "unweighted_vertices": 0,
+  "actions": {
+    "Idle_Loop": {
+      "loop_vertex_error": 0.0,
+      "edge_stretch_p99": 1.2886929545650556,
+      "max_edge_stretch": 1.5707642554447099
+    },
+    "Walk_Loop": {
+      "loop_vertex_error": 0.0,
+      "edge_stretch_p99": 1.368182420586084,
+      "max_edge_stretch": 2.797079386531152
+    }
+  }
+}
