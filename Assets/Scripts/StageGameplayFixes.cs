@@ -72,8 +72,15 @@ namespace FPSStarter
                 Rigidbody body = player.GetComponent<Rigidbody>();
                 if (body != null) Object.Destroy(body);
 
-                foreach (MeshCollider meshCollider in player.GetComponents<MeshCollider>())
-                    Object.Destroy(meshCollider);
+                // The CharacterController is the player's collision body. A
+                // second solid box/capsule extends below its feet and can snag
+                // landings or be mistaken for the ground by support queries.
+                foreach (Collider collider in player.GetComponents<Collider>())
+                {
+                    if (collider is CharacterController || collider.isTrigger) continue;
+                    collider.enabled = false;
+                    Object.Destroy(collider);
+                }
             }
 
             Level2RoomSetup setup = player.GetComponent<Level2RoomSetup>();
@@ -98,14 +105,20 @@ namespace FPSStarter
             CharacterController controller = player.GetComponent<CharacterController>();
             if (controller == null) return;
 
-            if (player.transform.position.y < 0.9f)
+            // Stage 2's actual floor is below world zero. Only lift an embedded
+            // capsule to a real supporting surface, never to a hard-coded Y.
+            Physics.SyncTransforms();
+            Bounds bounds = controller.bounds;
+            RaycastHit[] floors = Physics.RaycastAll(bounds.center, Vector3.down, bounds.extents.y + 1f, ~0, QueryTriggerInteraction.Ignore);
+            float floorY = float.NegativeInfinity;
+            foreach (RaycastHit hit in floors)
             {
-                Vector3 position = player.transform.position;
-                position.y = 1.05f;
-                player.transform.position = position;
+                if (hit.collider.transform.IsChildOf(player.transform) || hit.normal.y < 0.6f ||
+                    hit.point.y > bounds.min.y + controller.stepOffset * Mathf.Abs(player.transform.lossyScale.y)) continue;
+                if (hit.point.y > floorY) floorY = hit.point.y;
             }
-
-            controller.Move(Vector3.up * 0.05f);
+            if (floorY > bounds.min.y + 0.01f)
+                controller.Move(Vector3.up * (floorY - bounds.min.y + 0.05f));
         }
 
         private static void EnableStage2EnvironmentalRooms()
@@ -134,11 +147,13 @@ namespace FPSStarter
 
         private static void EnsureHighGravityEnemy()
         {
-            if (Object.FindFirstObjectByType<HighGravityEnemy>() != null) return;
             foreach (RoomMechanicVolume room in Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
             {
                 if (room.Mechanic != RoomMechanic.HighGravity) continue;
-                new GameObject("High Gravity Enemy Settings").AddComponent<HighGravityEnemy>().Configure(room);
+                HighGravityEnemy enemy = Object.FindFirstObjectByType<HighGravityEnemy>();
+                if (enemy == null) enemy = new GameObject("High Gravity Enemy Settings").AddComponent<HighGravityEnemy>();
+                enemy.Configure(room);
+                enemy.enabled = true;
                 return;
             }
         }
@@ -257,7 +272,10 @@ namespace FPSStarter
 
         internal static void ConfigureStage2KeyDoorLocks()
         {
-            string[] doorNames = { "door.001", "door.002", "door.003", "door.004" };
+            bool importedStage2 = GameObject.Find("Objects/New Level 2 grey box") != null;
+            string[] doorNames = importedStage2
+                ? new[] { "door.004", "door.003", "door.002", "door.001" }
+                : new[] { "door.001", "door.002", "door.003", "door.004" };
             RoomMechanic[] roomOrder =
             {
                 RoomMechanic.Ice,
@@ -274,23 +292,27 @@ namespace FPSStarter
 
             for (int index = 0; index < roomOrder.Length; index++)
             {
-                DoorOutward door = FindDoor(doorNames[index]);
-                if (door == null || availableKeys.Count == 0) continue;
+                if (availableKeys.Count == 0) break;
 
                 CarryableObject roomKey = availableKeys[0];
                 availableKeys.RemoveAt(0);
                 string keyId = "stage2-key-" + roomOrder[index].ToString().ToLowerInvariant();
                 roomKey.SetItemId(keyId);
-                door.RequireKey(keyId);
+                // Key identities must not shift if an exit door is missing.
+                DoorOutward door = FindDoor(doorNames[index], importedStage2);
+                if (door != null) door.RequireKey(keyId);
             }
         }
 
-        private static DoorOutward FindDoor(string objectName)
+        private static DoorOutward FindDoor(string objectName, bool importedStage2)
         {
             foreach (DoorOutward door in Object.FindObjectsByType<DoorOutward>(FindObjectsSortMode.None))
             {
-                if (string.Equals(door.name, objectName, System.StringComparison.OrdinalIgnoreCase))
-                    return door;
+                if (!string.Equals(door.name.Replace(" ", string.Empty), objectName, System.StringComparison.OrdinalIgnoreCase)) continue;
+                if (!importedStage2) return door;
+                // A second legacy model contains identically named doors.
+                for (Transform ancestor = door.transform.parent; ancestor != null; ancestor = ancestor.parent)
+                    if (ancestor.name == "New Level 2 grey box") return door;
             }
             return null;
         }
