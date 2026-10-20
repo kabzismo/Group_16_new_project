@@ -2518,7 +2518,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 7a575cd18e73bd145851f37db4848c50, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.603
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -2591,8 +2591,8 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.016620636
-      value: 0.71209717
+      time: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -2611,7 +2611,7 @@ Transform:
   m_GameObject: {fileID: 915651743}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 39.33215, y: 0, z: 82.89165}
+  m_LocalPosition: {x: 559, y: 0, z: 82.89165}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5014,6 +5014,7 @@ GameObject:
   - component: {fileID: 7202193381324382085}
   - component: {fileID: 7370277067896693606}
   - component: {fileID: 8808235878091462925}
+  - component: {fileID: 8808235878091462926}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -9760,6 +9761,14 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!81 &8808235878091462926
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 65702495044915616}
+  m_Enabled: 1
 --- !u!1 &8826152952743454539
 GameObject:
   m_ObjectHideFlags: 0
