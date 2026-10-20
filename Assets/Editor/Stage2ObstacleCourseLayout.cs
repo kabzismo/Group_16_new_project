@@ -12,6 +12,7 @@ using Object = UnityEngine.Object;
 internal static class Stage2ObstacleCourseLayout
 {
     internal const string RootName = "Reference Obstacle Courses";
+    internal const string HotCourseName = "Hot Room - Staggered Lava Course";
     internal const string LowCourseName = "Low Gravity - Spiral Tower";
     internal const float Floor = -3.5982f;
     internal readonly struct Landing
@@ -31,21 +32,31 @@ internal static class Stage2ObstacleCourseLayout
 
     internal static Landing[] HotRoute => new[]
     {
-        new Landing(6.3f, 67.15f, 0.15f, 3.8f, 3.0f),
-        new Landing(9.7f, 66.4f, 0.85f, 3.2f, 2.8f, false, -8f),
-        new Landing(13.9f, 64.6f, 1.5f, 2.2f, 2.2f, true),
-        new Landing(17.9f, 62.4f, 2.0f, 3.6f, 3.0f, false, 12f),
-        new Landing(21.0f, 58.4f, 2.5f, 2.0f, 2.0f, true),
-        new Landing(18.6f, 54.5f, 2.0f, 4.0f, 3.3f, false, -10f),
-        new Landing(14.1f, 52.4f, 2.65f, 2.0f, 2.0f, true),
-        new Landing(10.1f, 50.3f, 3.35f, 3.4f, 3.0f, false, 10f),
-        new Landing(7.7f, 46.0f, 3.85f, 2.0f, 2.0f, true),
-        new Landing(10.6f, 42.0f, 4.35f, 3.6f, 3.2f, false, -10f),
-        new Landing(14.6f, 39.5f, 4.8f, 1.9f, 1.9f, true),
-        new Landing(19.0f, 37.2f, 5.3f, 4.0f, 3.3f, false, 12f),
-        new Landing(20.8f, 32.9f, 5.8f, 2.1f, 2.1f, true),
-        new Landing(16.7f, 30.8f, 6.25f, 3.5f, 3.0f, false, -8f),
-        new Landing(12.2f, 31.0f, 6.25f, 5.0f, 4.0f)
+        // A winding climb, two changes of direction, then a descending finale
+        // beside the exit. Every required rise is <= .65 m; the tension comes
+        // from the smaller, angled landings and the all-surfaces heat timer.
+        new Landing(6.4f, 67.1f, 0.15f, 3.5f, 3.0f),
+        new Landing(9.9f, 65.9f, 0.8f, 2.6f, 2.25f, false, -18f),
+        new Landing(13.5f, 64.2f, 1.45f, 1.85f, 1.85f, true),
+        new Landing(17.1f, 62.3f, 2.05f, 2.7f, 1.9f, false, 30f),
+        new Landing(21.2f, 60.3f, 2.6f, 1.8f, 1.8f, true),
+        new Landing(21.1f, 56.2f, 3.1f, 2.5f, 2.05f, false, -18f),
+        new Landing(17.3f, 54.1f, 3.7f, 1.85f, 1.85f, true),
+        new Landing(13.3f, 55.0f, 4.3f, 2.55f, 1.9f, false, -28f),
+        new Landing(9.5f, 52.8f, 4.85f, 1.8f, 1.8f, true),
+        new Landing(7.3f, 48.9f, 5.4f, 2.7f, 2.2f, false, 15f),
+        new Landing(10.4f, 45.5f, 6.0f, 1.85f, 1.85f, true),
+        new Landing(14.5f, 46.2f, 6.65f, 2.7f, 1.85f, false, -28f),
+        new Landing(18.3f, 43.8f, 7.25f, 1.8f, 1.8f, true),
+        new Landing(21.3f, 40.7f, 7.8f, 2.9f, 2.0f, false, 18f),
+        new Landing(18.1f, 37.8f, 8.3f, 1.85f, 1.85f, true),
+        new Landing(14.5f, 35.4f, 8.8f, 3.1f, 2.35f, false, -15f),
+        new Landing(10.5f, 32.8f, 7.6f, 2.0f, 2.0f, true),
+        new Landing(7.3f, 29.9f, 6.4f, 2.8f, 2.0f, false, -18f),
+        new Landing(11.9f, 29.4f, 5.7f, 2.0f, 2.0f, true),
+        new Landing(16.3f, 29.6f, 3.6f, 2.7f, 2.0f, false, 12f),
+        new Landing(20.6f, 30.6f, 2.1f, 1.9f, 1.9f, true),
+        new Landing(23.0f, 32.9f, 0.65f, 3.0f, 2.7f)
     };
 
     internal static Landing[] LowRoute
@@ -140,14 +151,7 @@ internal static class Stage2ObstacleCourseLayout
         }
 
         Transform root = CreateGroup(RootName, null);
-        Transform hot = CreateGroup("Hot Room - Staggered Lava Course", root);
-        Landing[] hotRoute = HotRoute;
-        for (int i = 0; i < hotRoute.Length; i++)
-            Platform(hot, "Hot " + i.ToString("00") + (i == hotRoute.Length - 1 ? " - Finish Landing" : ""), hotRoute[i], crate, shaft, cap, true);
-        Platform(hot, "Hot Shortcut - Precision Pillar", new Landing(15.8f, 58f, 2.1f, 1.55f, 1.55f, true), crate, shaft, cap, true);
-        Copy(furnace, hot, "Reused Furnace - Left", new Vector3(6.7f, Floor + 2.2f, 58f), new Vector3(2.5f, 4.4f, 2.5f), 15f, true, true);
-        Copy(furnace, hot, "Reused Furnace - Right", new Vector3(21.2f, Floor + 2.8f, 46.5f), new Vector3(2.5f, 5.6f, 2.5f), -20f, true, true);
-        MoveKey(Find("Big Key_2"), hotRoute[hotRoute.Length - 1].Top + Vector3.up * 0.75f);
+        BuildHotCourse(root, crate, shaft, cap, cannon, furnace);
 
         BuildLowCourse(root, crate, shaft, cap, cannon);
 
@@ -157,6 +161,77 @@ internal static class Stage2ObstacleCourseLayout
         EditorSceneManager.SaveScene(scene);
         Selection.activeGameObject = root.gameObject;
         Debug.Log("Saved reference courses using only existing meshes and materials. Previous obstacles remain disabled for recovery.");
+    }
+
+    [MenuItem("Tools/Stage 2/Rebuild Hot Room Course Only")]
+    internal static void RebuildHotOnly()
+    {
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.name != "Stage 2" || EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Open Stage 2 outside Play mode before rebuilding the Hot Room.");
+
+        // Save the live scene, including unsaved design work, as a recovery copy.
+        string backup = "Temp/Stage2BeforeHotCourse_" + DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + ".unity";
+        if (!EditorSceneManager.SaveScene(scene, backup, true))
+            throw new IOException("Could not save the Hot Room recovery copy.");
+
+        // Resolve templates before changing anything. The originals may be
+        // inactive, but their existing meshes and materials are retained.
+        GameObject crate = Find("Objects/Level 2 grey box/Cube (29)").gameObject;
+        GameObject shaft = Find("Objects/Bat/Cylinder.001").gameObject;
+        GameObject cap = Find("Objects/Bat/Cylinder.002").gameObject;
+        GameObject cannon = Find("Objects/Canons").gameObject;
+        GameObject furnace = Find("Objects/Furnace").gameObject;
+
+        Undo.IncrementCurrentGroup();
+        int undoGroup = Undo.GetCurrentGroup();
+        Undo.SetCurrentGroupName("Elaborate Hot Room obstacle course");
+        GameObject rootObject = GameObject.Find(RootName);
+        Transform root = rootObject != null ? rootObject.transform : CreateGroup(RootName, null);
+        Transform previous = root.Find(HotCourseName);
+        if (previous != null) Undo.DestroyObjectImmediate(previous.gameObject);
+        BuildHotCourse(root, crate, shaft, cap, cannon, furnace);
+        Physics.SyncTransforms();
+        Undo.CollapseUndoOperations(undoGroup);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Selection.activeGameObject = root.Find(HotCourseName).gameObject;
+        Debug.Log("Saved the expanded Hot Room: 22 main landings, optional precision shortcut, reused industrial props. Low Gravity was not changed. Recovery copy: " + backup);
+    }
+
+    private static void BuildHotCourse(Transform root, GameObject crate, GameObject shaft, GameObject cap, GameObject cannon, GameObject furnace)
+    {
+        Transform hot = CreateGroup(HotCourseName, root);
+        Landing[] route = HotRoute;
+        for (int i = 0; i < route.Length; i++)
+        {
+            string role = i == route.Length - 1 ? " - Exit Landing" : i == 15 ? " - Summit Turn" :
+                i >= 16 ? " - Descending Finale" : route[i].Round ? " - Precision Pillar" : " - Angled Deck";
+            Platform(hot, "Hot " + i.ToString("00") + role, route[i], crate, shaft, cap, true);
+        }
+
+        // Faster alternative from deck 07 to deck 11, saving one landing.
+        // The .9 m opening rise and 1.65 m tops make this the harder choice.
+        Platform(hot, "Hot Shortcut A - Expert Pillar", new Landing(14.9f, 51.3f, 5.2f, 1.65f, 1.65f, true), crate, shaft, cap, true);
+        Platform(hot, "Hot Shortcut B - Expert Pillar", new Landing(14.2f, 48.6f, 6.0f, 1.65f, 1.65f, true), crate, shaft, cap, true);
+
+        // Repeated silhouettes establish a furnace-hall rhythm. These are in
+        // the gaps outside the required jump corridors, not invisible blockers
+        // on landings. Compound props keep exact child-mesh collision.
+        Copy(furnace, hot, "Reused Furnace - Intake", new Vector3(6.3f, Floor + 2.75f, 58f), new Vector3(2.3f, 5.5f, 2.3f), 15f, true, true);
+        Copy(furnace, hot, "Reused Furnace - Central Stack", new Vector3(23.5f, Floor + 3.2f, 48.6f), new Vector3(2.4f, 6.4f, 2.4f), -15f, true, true);
+        Copy(furnace, hot, "Reused Furnace - Exhaust", new Vector3(6.3f, Floor + 3.5f, 41.6f), new Vector3(2.3f, 7.0f, 2.3f), 15f, true, true);
+        Copy(cannon, hot, "Reused Cannon - Inner Foundry", new Vector3(19.7f, Floor + 1.6f, 49.0f), new Vector3(4.7f, 3.2f, 2.8f), 40f, true, true);
+        Copy(cannon, hot, "Reused Cannon - Summit Base", new Vector3(11.3f, Floor + 1.6f, 40.3f), new Vector3(4.8f, 3.2f, 2.7f), -25f, true, true);
+
+        Transform finish = CreateGroup("Exit Frame - Reused Bat and Crate", hot);
+        Copy(shaft, finish, "Left Frame Post", new Vector3(21.3f, Floor + 2.5f, 33.7f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
+        Copy(shaft, finish, "Right Frame Post", new Vector3(24.7f, Floor + 2.5f, 33.7f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
+        Copy(crate, finish, "Overhead Frame Beam", new Vector3(23f, Floor + 4.65f, 33.7f), new Vector3(3.8f, .25f, .3f), 0f, true);
+
+        // The summit pickup makes the climb meaningful; a key beside the low
+        // exit would let players bypass the course by hopping across the floor.
+        MoveKey(Find("Big Key_2"), route[15].Top + Vector3.up * 0.75f);
     }
 
     [MenuItem("Tools/Stage 2/Rebuild Low Gravity Course Only")]
