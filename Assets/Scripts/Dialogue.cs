@@ -4,37 +4,58 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 using UnityEngine.UI;
+using FPSStarter;
 
 public class Dialogue : MonoBehaviour
 {
+    [Header("Dialogue Settings")]
     public TextMeshProUGUI textComponent;
     public string[] lines;
     public float textSpeed = 0.03f;
 
+    [Header("Dialogue UI")]
     public Image characterImage;
-
-    // The actual dialogue UI panel
     public GameObject dialoguePanel;
-
-    // Panel that appears after the dialogue is finished
     public GameObject levelChoicePanel;
+
+    [Header("Player Scripts")]
+    [SerializeField] private FirstPersonController fpController;
+    [SerializeField] private PlayerInteractor interactor;
 
     private int index;
     private bool isTyping;
     private bool isActive;
 
-    void Start()
+    public bool IsActive => isActive;
+
+    private void Awake()
+    {
+        if (fpController == null)
+            fpController = FindFirstObjectByType<FirstPersonController>();
+
+        if (interactor == null)
+            interactor = FindFirstObjectByType<PlayerInteractor>();
+    }
+
+    private void Start()
     {
         textComponent.text = string.Empty;
 
-        // Hide everything at the start
         characterImage.gameObject.SetActive(false);
         dialoguePanel.SetActive(false);
         levelChoicePanel.SetActive(false);
     }
 
-    void Update()
+    private void Update()
     {
+        // Keep the cursor visible during dialogue and level selection.
+        if (isActive || (levelChoicePanel != null &&
+                         levelChoicePanel.activeInHierarchy))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
         if (!isActive)
             return;
 
@@ -43,7 +64,6 @@ public class Dialogue : MonoBehaviour
         {
             if (isTyping)
             {
-                // Instantly finish the current line
                 StopAllCoroutines();
 
                 textComponent.text = lines[index];
@@ -51,7 +71,6 @@ public class Dialogue : MonoBehaviour
             }
             else
             {
-                // Move to the next line
                 NextLine();
             }
         }
@@ -65,7 +84,17 @@ public class Dialogue : MonoBehaviour
             return;
         }
 
+        if (isActive)
+            return;
+
         StopAllCoroutines();
+
+        // Disable player movement and interaction.
+        SetPlayerControls(false);
+
+        // Unlock the cursor.
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         index = 0;
         isTyping = false;
@@ -80,7 +109,7 @@ public class Dialogue : MonoBehaviour
         StartCoroutine(TypeLine());
     }
 
-    IEnumerator TypeLine()
+    private IEnumerator TypeLine()
     {
         isTyping = true;
         textComponent.text = string.Empty;
@@ -88,14 +117,13 @@ public class Dialogue : MonoBehaviour
         foreach (char c in lines[index].ToCharArray())
         {
             textComponent.text += c;
-
             yield return new WaitForSecondsRealtime(textSpeed);
         }
 
         isTyping = false;
     }
 
-    void NextLine()
+    private void NextLine()
     {
         if (index < lines.Length - 1)
         {
@@ -104,16 +132,43 @@ public class Dialogue : MonoBehaviour
         }
         else
         {
-            // Dialogue is finished
+            // End dialogue without restoring player controls.
             isActive = false;
-
             StopAllCoroutines();
 
             characterImage.gameObject.SetActive(false);
             dialoguePanel.SetActive(false);
 
-            // Show the option to continue to the first level
+            // Show level selection.
             levelChoicePanel.SetActive(true);
+
+            // Keep cursor free for clicking the level button.
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
+    }
+
+    private void SetPlayerControls(bool state)
+    {
+        if (fpController != null)
+            fpController.enabled = state;
+        else
+            Debug.LogWarning(
+                "Dialogue: FirstPersonController was not found.");
+
+        if (interactor != null)
+            interactor.enabled = state;
+        else
+            Debug.LogWarning(
+                "Dialogue: PlayerInteractor was not found.");
+    }
+
+    // Optional: call this only when returning to gameplay.
+    public void ResumePlayer()
+    {
+        SetPlayerControls(true);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }
