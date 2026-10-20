@@ -3,7 +3,7 @@ using UnityEngine;
 namespace FPSStarter
 {
     /// <summary>
-    /// Makes the Hot Room floor lethal after a short continuous time on it.
+    /// Makes every Hot Room surface lethal after a short continuous time on it.
     /// Leaving the ground, even briefly, resets the timer.
     /// </summary>
     [RequireComponent(typeof(FirstPersonController), typeof(CharacterController))]
@@ -243,7 +243,7 @@ namespace FPSStarter
                 }
 
                 GUI.Label(new Rect(panel.x + 190f, panel.y + 15f, 190f, 20f),
-                    airborne ? "AIRBORNE / RESET" : urgent ? "JUMP NOW" : "FLOOR TIMER", timerStatusStyle);
+                    airborne ? "AIRBORNE / RESET" : urgent ? "JUMP NOW" : "HEAT TIMER", timerStatusStyle);
                 GUI.Label(new Rect(panel.x + 20f, panel.y + 39f, 180f, 46f), remaining.ToString("0.0") + "s", timerValueStyle);
                 GUI.Label(new Rect(panel.x + 210f, panel.y + 48f, 170f, 28f), "JUMP TO RESET", timerInstructionStyle);
                 Rect track = new Rect(panel.x + 20f, panel.y + 96f, 360f, 6f);
