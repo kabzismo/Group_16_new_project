@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 public class HintTrigger : MonoBehaviour
 {
     public Hint hint;
+    [Tooltip("Room introduced by this entrance hint. Completed only after its final line.")]
+    public FPSStarter.RoomMechanicVolume entranceRoom;
 
     [TextArea]
     public string[] hintLines;
@@ -35,7 +37,7 @@ public class HintTrigger : MonoBehaviour
 
     void Update()
     {
-        if (!playerInRange || !isUnlocked || used)
+        if (!playerInRange || !isUnlocked || used || Hint.IsReading)
             return;
 
         if (Keyboard.current != null &&
@@ -52,10 +54,11 @@ public class HintTrigger : MonoBehaviour
 
     public void ShowHint()
     {
-        hint.StartHint(hintLines);
-
-        if (onlyOnce)
-            used = true;
+        if (hint == null || !hint.TryStartHint(hintLines, () =>
+        {
+            if (entranceRoom != null) entranceRoom.CompleteEntranceHint();
+            if (onlyOnce) used = true;
+        })) return;
 
         if (promptUI != null)
             promptUI.SetActive(false);

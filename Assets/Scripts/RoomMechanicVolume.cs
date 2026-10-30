@@ -28,6 +28,8 @@ namespace FPSStarter
         [SerializeField, Min(0f)] private float movementSpeedMultiplier = 1f;
 
         public RoomMechanic Mechanic => mechanic;
+        public bool EntranceHintCompleted { get; private set; }
+        public void CompleteEntranceHint() => EntranceHintCompleted = true;
         public int Priority => priority;
         public float GravityMultiplier => gravityMultiplier;
         public float MovementSpeedMultiplier => movementSpeedMultiplier;

@@ -11,6 +11,9 @@ namespace FPSStarter
         [SerializeField] private RoomMechanicVolume room;
         [Tooltip("Saved scene character, visible and positionable before Play mode.")]
         [SerializeField] private Transform enemyActor;
+        [Tooltip("Fixed checkpoint beside Door .002 for enemy catches.")]
+        [SerializeField] private Transform catchRespawnPoint;
+        public void ConfigureCatchCheckpoint(Transform checkpoint) => catchRespawnPoint = checkpoint;
         [Tooltip("Fraction of the player's normal, uncrouched walking speed.")]
         [SerializeField, Range(0.01f, 1f)] private float walkSpeedMultiplier = 0.35f;
         [SerializeField, Min(0.1f)] private float catchDistance = 0.8f;
@@ -292,6 +295,12 @@ namespace FPSStarter
         private void Update()
         {
             if (!IsReady || player == null) return;
+            if (Hint.IsReading || !room.EntranceHintCompleted)
+            {
+                agent.isStopped = true;
+                chasing = false;
+                return;
+            }
             agent.speed = WalkSpeed;
             bool shouldChase = player.isActiveAndEnabled && player.CurrentMechanic == RoomMechanic.HighGravity &&
                 player.CurrentRoom == room && InsideRoom(player.transform.position) && Time.time >= catchCooldownUntil;
@@ -309,7 +318,7 @@ namespace FPSStarter
                 if (Time.time >= recoveryUntil) UpdateChasePath();
             }
             CheckProgress();
-            if (CanCatchPlayer() && respawn.TryRespawnAtDoor("The enemy caught you. Try again!"))
+            if (CanCatchPlayer() && respawn.TryRespawnAtCheckpoint(catchRespawnPoint, "Door .002", "The enemy caught you. Try again!"))
             {
                 catchCooldownUntil = Time.time + 2f;
                 ResetEnemy();

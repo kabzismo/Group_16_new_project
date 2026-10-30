@@ -163,9 +163,9 @@ namespace FPSStarter
             FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
             if (player == null) return;
 
-            // Ice retains its slower top speed but now starts and stops quickly.
+            // Retain the slower top speed with softer steering and longer braking.
             // These values apply only while the Ice room trigger is active.
-            player.ConfigureStage2Movement(0.7f, 7f, 9f, 1.5f);
+            player.ConfigureStage2Movement(0.7f, 3.2f, 2f, 1.5f);
         }
 
         private static void EnsureStage2DoorBootstrapper()
