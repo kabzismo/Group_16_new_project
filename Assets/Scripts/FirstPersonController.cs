@@ -107,6 +107,12 @@ namespace FPSStarter
 
         private void Update()
         {
+            if (Hint.IsReading)
+            {
+                horizontalVelocity = targetHorizontalVelocity = Vector3.zero;
+                verticalVelocity = 0f;
+                return;
+            }
             ResolveViewCamera();
             UpdateCursor();
 
@@ -177,6 +183,11 @@ namespace FPSStarter
 
         private void UpdateMovement()
         {
+            if (verticalVelocity <= 0f && TryGetSupport(out RaycastHit riding))
+            {
+                MovingGravityPlatform platform = riding.collider.GetComponentInParent<MovingGravityPlatform>();
+                if (platform != null) controller.Move(platform.FrameDelta);
+            }
             Keyboard keyboard = Keyboard.current;
             Vector2 input = ReadMovementInput(keyboard);
             input = Vector2.ClampMagnitude(input, 1f);
@@ -204,8 +215,7 @@ namespace FPSStarter
             targetHorizontalVelocity = targetVelocity;
             if (currentMechanic == RoomMechanic.Ice && !standingOnBox)
             {
-                // Ice keeps its lower top speed, but now responds promptly when
-                // the player starts moving or releases every movement control.
+                // Lower acceleration and braking preserve momentum on ice.
                 float responseRate = input.sqrMagnitude > 0f ? iceAcceleration : iceDeceleration;
                 horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, responseRate * Time.deltaTime);
             }
@@ -318,6 +328,8 @@ namespace FPSStarter
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
+            if (hit.normal.y > 0.5f && verticalVelocity <= 0f)
+                hit.collider.GetComponentInParent<TimedGravityPlatform>()?.Land();
             if (currentMechanic == RoomMechanic.Ice && verticalVelocity <= 0f && hit.normal.y > 0.5f && IsBoxSurface(hit.collider))
                 horizontalVelocity = targetHorizontalVelocity;
         }
@@ -379,7 +391,7 @@ namespace FPSStarter
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (hasFocus && cursorLocked) LockCursor(true);
+            if (hasFocus && cursorLocked && !Hint.IsReading) LockCursor(true);
         }
     }
 }

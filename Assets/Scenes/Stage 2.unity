@@ -13229,6 +13229,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 255300848}
+  - component: {fileID: 255300849}
   m_Layer: 0
   m_Name: Low 18 - Angled Ledge
   m_TagString: Untagged
@@ -13252,6 +13253,21 @@ Transform:
   - {fileID: 1464049030}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &255300849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 255300847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 0.55, y: 0, z: 0}
+  period: 4
+  room: {fileID: 1279329336}
 --- !u!1 &255458462
 GameObject:
   m_ObjectHideFlags: 0
@@ -13373,6 +13389,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 256635711}
+  - component: {fileID: 256635712}
   m_Layer: 0
   m_Name: Low 07 - Angled Ledge
   m_TagString: Untagged
@@ -13396,6 +13413,21 @@ Transform:
   - {fileID: 1466228092}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &256635712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 256635710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 0.55, y: 0, z: 0}
+  period: 4
+  room: {fileID: 1279329336}
 --- !u!1 &256816149
 GameObject:
   m_ObjectHideFlags: 0
@@ -17471,6 +17503,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 416834111}
+  - component: {fileID: 416834112}
   m_Layer: 0
   m_Name: Low 20 - Angled Ledge
   m_TagString: Untagged
@@ -17494,6 +17527,22 @@ Transform:
   - {fileID: 804462751}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &416834112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416834110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f19906171598fb4790cceb40efd2278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.TimedGravityPlatform
+  room: {fileID: 1279329336}
+  secondsToCollapse: 1.6
+  secondsToRestore: 4
+  ghostOpacity: 0.22
 --- !u!1 &417048486
 GameObject:
   m_ObjectHideFlags: 0
@@ -25808,6 +25857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   hint: {fileID: 207116524}
+  entranceRoom: {fileID: 1908704043}
   hintLines:
   - Wow a hint so soon..
   - Well inside this door you will be tasked with finding a key that could help you
@@ -32275,6 +32325,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   hint: {fileID: 207116524}
+  entranceRoom: {fileID: 1771207006}
   hintLines:
   - Ah wow
   - You're actually progressing.
@@ -32286,6 +32337,8 @@ MonoBehaviour:
     key.
   - It"ll be a joy watching you suffer-
   - again
+  - The enemy hunts after you finish this hint. If caught, you return beside Door
+    .002.
   interactKey: 19
   promptUI: {fileID: 837866643}
   hintIcon: {fileID: 604519084}
@@ -34276,6 +34329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   hint: {fileID: 207116524}
+  entranceRoom: {fileID: 1279329336}
   hintLines:
   - Congratulations!
   - You actually found the second key
@@ -34286,6 +34340,10 @@ MonoBehaviour:
   - This could take time, so don't be surprised when you fail
   - 'Have fun and come back for another hint when you fail... '
   - again
+  - Some of these crates move. Time your jump and ride them across.
+  - Other crates phase out shortly after you land. Move quickly!
+  - Solid crates support you. See-through crates cannot be landed on; wait for them
+    to become solid again.
   interactKey: 19
   promptUI: {fileID: 837866643}
   hintIcon: {fileID: 1596026040}
@@ -47833,6 +47891,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 812841017}
+  - component: {fileID: 812841018}
   m_Layer: 0
   m_Name: Low 02 - Angled Ledge
   m_TagString: Untagged
@@ -47856,6 +47915,21 @@ Transform:
   - {fileID: 369585988}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &812841018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812841016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 0.55, y: 0, z: 0}
+  period: 4
+  room: {fileID: 1279329336}
 --- !u!1 &813110880
 GameObject:
   m_ObjectHideFlags: 0
@@ -55969,6 +56043,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.HighGravityEnemy
   room: {fileID: 1771207006}
   enemyActor: {fileID: 920020002}
+  catchRespawnPoint: {fileID: 1276184828}
   walkSpeedMultiplier: 0.35
   catchDistance: 0.8
   bodyColor: {r: 0.24, g: 0.08, b: 0.11, a: 1}
@@ -78258,6 +78333,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1274095199}
   m_Mesh: {fileID: -5495902117074765545, guid: 6c7f673db8fe84c43900b8e0b1db63b2, type: 3}
+--- !u!1 &1276184827
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1276184828}
+  m_Layer: 0
+  m_Name: Enemy Catch Checkpoint - Door .002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1276184828
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276184827}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 49.330418, y: -3.518197, z: 65.93119}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1276528235
 GameObject:
   m_ObjectHideFlags: 0
@@ -83694,6 +83800,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1290315242}
+  - component: {fileID: 1290315243}
   m_Layer: 0
   m_Name: Low 11 - Precision Pillar
   m_TagString: Untagged
@@ -83718,6 +83825,22 @@ Transform:
   - {fileID: 270390524}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1290315243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290315241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f19906171598fb4790cceb40efd2278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.TimedGravityPlatform
+  room: {fileID: 1279329336}
+  secondsToCollapse: 1.6
+  secondsToRestore: 4
+  ghostOpacity: 0.22
 --- !u!1 &1294181051
 GameObject:
   m_ObjectHideFlags: 0
@@ -93572,6 +93695,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1457557748}
+  - component: {fileID: 1457557749}
   m_Layer: 0
   m_Name: Low 04 - Angled Ledge
   m_TagString: Untagged
@@ -93595,6 +93719,22 @@ Transform:
   - {fileID: 2058932982}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1457557749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457557747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f19906171598fb4790cceb40efd2278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.TimedGravityPlatform
+  room: {fileID: 1279329336}
+  secondsToCollapse: 1.6
+  secondsToRestore: 4
+  ghostOpacity: 0.22
 --- !u!1 &1460283590
 GameObject:
   m_ObjectHideFlags: 0
@@ -139768,6 +139908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   hint: {fileID: 207116524}
+  entranceRoom: {fileID: 1154207799}
   hintLines:
   - Congratulations!
   - You finally found the 1st key that will to your dea-
@@ -157738,3 +157879,4 @@ SceneRoots:
   - {fileID: 847417535}
   - {fileID: 1260061312}
   - {fileID: 471061487}
+  - {fileID: 1276184828}

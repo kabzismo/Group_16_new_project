@@ -42,6 +42,7 @@ namespace FPSStarter
         private float groundTime;
         private float respawnMessageUntil;
         private string respawnMessage = "The lava got you. Try again!";
+        private string lastRespawnDoorName;
         private Bounds closedDoorBounds;
         private Vector3 doorRespawnPosition;
         private Quaternion doorRespawnRotation;
@@ -64,7 +65,7 @@ namespace FPSStarter
 
         private void Update()
         {
-            if (player == null || !player.isActiveAndEnabled) return;
+            if (player == null || !player.isActiveAndEnabled || Hint.IsReading) return;
             if (iceRoom == null) iceRoom = FindIceRoom();
             if (!hasDoorRespawn) CacheDoorRespawn();
 
@@ -92,6 +93,23 @@ namespace FPSStarter
             player.RespawnAt(GetDoorFloorPosition(), doorRespawnRotation, iceRoom);
             Physics.SyncTransforms();
             respawnMessage = message;
+            lastRespawnDoorName = respawnDoorName;
+            respawnMessageUntil = Time.time + 1.5f;
+            return true;
+        }
+
+        public bool TryRespawnAtCheckpoint(Transform checkpoint, string doorName, string message)
+        {
+            if (checkpoint == null || player == null) return false;
+            groundTime = 0f;
+            RoomMechanicVolume destination = null;
+            foreach (var volume in FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None))
+                if (volume.GetComponent<Collider>().bounds.Contains(checkpoint.position) &&
+                    (destination == null || volume.Priority > destination.Priority)) destination = volume;
+            player.RespawnAt(checkpoint.position, checkpoint.rotation, destination);
+            Physics.SyncTransforms();
+            respawnMessage = message;
+            lastRespawnDoorName = doorName;
             respawnMessageUntil = Time.time + 1.5f;
             return true;
         }
@@ -233,7 +251,7 @@ namespace FPSStarter
                     RoomHudGraphics.Panel(panel, timerPanelColor, accent);
                 EnsureTimerStyles(accent);
                 GUI.Label(new Rect(panel.x + 20f, panel.y + 13f, showingRespawn ? 360f : 160f, 24f),
-                    showingRespawn ? "BACK BY " + respawnDoorName.ToUpperInvariant() : timerHeading, timerHeadingStyle);
+                    showingRespawn ? "BACK BY " + lastRespawnDoorName.ToUpperInvariant() : timerHeading, timerHeadingStyle);
 
                 if (showingRespawn)
                 {
