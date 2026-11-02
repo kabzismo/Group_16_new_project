@@ -7159,6 +7159,7 @@ GameObject:
   m_Component:
   - component: {fileID: 207116525}
   - component: {fileID: 207116524}
+  - component: {fileID: 207116526}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -7202,6 +7203,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &207116526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207116523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a30f1394e264514891b11a57e7c68a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &210577378
 GameObject:
   m_ObjectHideFlags: 0
@@ -57420,7 +57433,7 @@ MonoBehaviour:
   settingsPanel: {fileID: 1092799447}
   controlsPanel: {fileID: 1536978619}
   pausebutton: {fileID: 899460120}
-  pauseButtonTitle: {fileID: 899460120}
+  pauseButtonTitle: {fileID: 1235211139}
   player: {fileID: 1750136879}
 --- !u!4 &946444388
 Transform:
