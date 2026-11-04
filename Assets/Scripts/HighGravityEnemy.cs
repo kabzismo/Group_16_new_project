@@ -295,7 +295,7 @@ namespace FPSStarter
         private void Update()
         {
             if (!IsReady || player == null) return;
-            if (Hint.IsReading || !room.EntranceHintCompleted)
+            if (Hint.IsReading)
             {
                 agent.isStopped = true;
                 chasing = false;

@@ -15,11 +15,14 @@ namespace FPSStarter
         void Update()
         {
             FrameDelta = Vector3.zero;
-            if (Hint.IsReading || room == null || !room.EntranceHintCompleted) return;
+            if (Hint.IsReading || room == null) return;
             elapsed += Time.deltaTime;
             Vector3 next = origin + travel * Mathf.Sin(elapsed * Mathf.PI * 2f / Mathf.Max(1f, period));
             FrameDelta = next - transform.position;
             transform.position = next;
+            // The controller queries support later in this frame. Make the
+            // moved collider available even when autoSyncTransforms is off.
+            Physics.SyncTransforms();
         }
     }
 }

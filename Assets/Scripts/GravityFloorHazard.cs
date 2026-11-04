@@ -17,7 +17,7 @@ namespace FPSStarter
         {
             // CharacterController trigger-stay messages are not reliable when
             // a platform collider disappears beneath a stationary player.
-            if (Hint.IsReading || room == null || !room.EntranceHintCompleted || Time.time < cooldown) return;
+            if (Hint.IsReading || room == null || Time.time < cooldown) return;
             if (player == null || player.CurrentRoom != room) return;
             var body = player.GetComponent<CharacterController>();
             if (body == null || !body.enabled || field == null || !field.bounds.Intersects(body.bounds)) return;

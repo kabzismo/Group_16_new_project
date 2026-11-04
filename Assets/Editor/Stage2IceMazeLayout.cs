@@ -28,39 +28,43 @@ internal static class Stage2IceMazeLayout
     internal static Vector3 MazeKeyCenter => new Vector3(53.1f, Floor + 0.95f, 29.5f);
     internal static Vector3 EnemyHome => Ground(61.6f, 48.2f);
 
-    // Main progression remains possible on the floor. Raised routes are optional
-    // ice-control challenges, rather than a surprise mandatory precision test.
+    // Continuous floor route: alternate wide braking turns and tighter slalom lanes.
     internal static Vector3[] IceWalkRoute => new[]
     {
-        Ground(-8.64f, 30.5f), Ground(-12f, 33f), Ground(-17.8f, 35.5f),
-        Ground(-17.8f, 42f), Ground(-17.8f, 46.5f), Ground(-13.8f, 49f),
-        Ground(-13f, 51.7f), Ground(-7f, 51.7f), Ground(-1.8f, 51.7f),
-        Ground(-1.8f, 54f), Ground(-7.6f, 54f), Ground(-7.6f, 55.5f),
-        Ground(-15f, 55.5f), Ground(-15f, 60.2f), Ground(-7.3f, 62f),
-        Ground(-5.1f, 62.6f), Ground(-2.5f, 63.4f), Ground(2.4f, 63.4f),
-        Ground(2.4f, 66.3f), Ground(1.5f, 66.3f), Ground(2.4f, 67.4f)
+        Ground(-8.64f, 30.5f), Ground(-17.7f, 33.5f), Ground(-17.7f, 38.5f),
+        Ground(-12f, 39f), Ground(-5f, 39f), Ground(0.5f, 39f), Ground(0.5f, 44.5f),
+        Ground(-5f, 45f), Ground(-12f, 45f), Ground(-17.7f, 45f), Ground(-17.7f, 50.5f),
+        Ground(-12f, 51f), Ground(-5f, 51f), Ground(0.5f, 51f), Ground(0.5f, 56.5f),
+        Ground(-5f, 57f), Ground(-12f, 57f), Ground(-17.7f, 57f), Ground(-17.7f, 63f),
+        Ground(-12f, 63f), Ground(-7f, 64.5f), Ground(-3f, 66.3f),
+        Ground(1.5f, 66.3f), Ground(2.4f, 67.4f)
     };
 
-    internal static Stage2ObstacleCourseLayout.Landing[] IceLandings => new[]
+    [MenuItem("Tools/Stage 2/Rebuild Ice Ground Course Only")]
+    internal static void RebuildIceOnly()
     {
-        new Stage2ObstacleCourseLayout.Landing(-8.8f, 34.4f, 0.25f, 4.4f, 3.0f),
-        new Stage2ObstacleCourseLayout.Landing(-12.2f, 37f, 0.75f, 3.6f, 3.4f, false, -8f),
-        new Stage2ObstacleCourseLayout.Landing(-15.1f, 40.1f, 1.2f, 3.0f, 3.0f, true),
-        new Stage2ObstacleCourseLayout.Landing(-13.2f, 43.2f, 1.7f, 4.2f, 3.2f, false, 10f),
-        new Stage2ObstacleCourseLayout.Landing(-9.9f, 46f, 2.2f, 3.2f, 3.2f, true),
-        new Stage2ObstacleCourseLayout.Landing(-6.6f, 47.4f, 2.7f, 3.8f, 3.0f, false, -10f),
-        new Stage2ObstacleCourseLayout.Landing(-3.1f, 49.6f, 3.2f, 3.0f, 3.0f, true),
-        new Stage2ObstacleCourseLayout.Landing(-0.3f, 52.2f, 3.7f, 3.8f, 3.2f, false, 8f),
-        new Stage2ObstacleCourseLayout.Landing(-3f, 55.7f, 4.2f, 3.8f, 3.4f),
-        new Stage2ObstacleCourseLayout.Landing(-6.3f, 57.9f, 4.7f, 3.0f, 3.0f, true),
-        new Stage2ObstacleCourseLayout.Landing(-8.5f, 60.4f, 5.2f, 3.8f, 3.2f, false, -8f),
-        new Stage2ObstacleCourseLayout.Landing(-11.5f, 62.8f, 5.7f, 3.6f, 3.2f),
-        new Stage2ObstacleCourseLayout.Landing(-8.4f, 65.6f, 6.2f, 3.8f, 3.4f, false, 8f),
-        new Stage2ObstacleCourseLayout.Landing(-4.7f, 65.6f, 6.65f, 3.8f, 3.2f),
-        new Stage2ObstacleCourseLayout.Landing(-0.6f, 65.8f, 7f, 5f, 4f)
-    };
-    internal static Vector3[] IceJumpRoute => IceLandings.Select(landing => landing.Top).ToArray();
-    internal static Vector2[] IceJumpSizes => IceLandings.Select(landing => landing.Size).ToArray();
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.name != "Stage 2" || EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Open Stage 2 outside Play mode first.");
+        Transform root = Find(RootName);
+        Transform old = root.Find(IceName);
+        if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
+        BuildIce(Group(IceName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject);
+        MoveKey(Find("Big Key_1"), IceKeyCenter);
+        foreach (var hint in Object.FindObjectsByType<HintTrigger>(FindObjectsSortMode.None))
+        {
+            if (hint.entranceRoom == null || hint.entranceRoom.Mechanic != RoomMechanic.Ice) continue;
+            Undo.RecordObject(hint, "Describe the ice ground course");
+            hint.hintLines = new[] {
+                "Stay on the icy floor and weave around the tall banks. The key is at ground level at the far end.",
+                "You keep sliding after releasing movement. Brake before each turn; steer against your momentum to change direction.",
+                "The gaps alternate sides. Take the slalom lanes slowly, then build speed on the straights. No jumping is needed."
+            };
+            EditorUtility.SetDirty(hint);
+        }
+        Physics.SyncTransforms();
+        EditorSceneManager.MarkSceneDirty(scene);
+    }
 
     internal static Vector3[] MazeCellCenters => Enumerable.Range(0, Columns * Rows).Select(CellCenter).ToArray();
     internal static Vector3[] MazeEnemyTargets => new[]
@@ -118,7 +122,7 @@ internal static class Stage2IceMazeLayout
             // solid blocks underneath the replacement route.
             disabled += DisableOldRoomCrates(Find("Objects/New Level 2 grey box"), false);
             Transform root = Group(RootName, null);
-            BuildIce(Group(IceName, root), crate, shaft, cap);
+            BuildIce(Group(IceName, root), crate);
             BuildMaze(Group(MazeName, root), crate, shaft, cap);
             MoveKey(iceKey, IceKeyCenter);
             MoveKey(highKey, MazeKeyCenter);
@@ -164,42 +168,28 @@ internal static class Stage2IceMazeLayout
         return disabled;
     }
 
-    private static void BuildIce(Transform parent, GameObject crate, GameObject shaft, GameObject cap)
+    private static void BuildIce(Transform parent, GameObject crate)
     {
-        // Open ends alternate. Nothing blocks the first-person spawn or the
-        // Door .004 approach, and every required corridor is comfortably wide.
-        FittedBox(crate, parent, "Ice Bank A - Left Approach", new Vector3(-5.5f, Floor + 1.4f, 39.8f), new Vector3(15f, 2.8f, 1f));
-        FittedBox(crate, parent, "Ice Bank B - Right Approach", new Vector3(-14.3f, Floor + 1.15f, 53.5f), new Vector3(11.4f, 2.3f, 1f));
-        FittedBox(crate, parent, "Ice Bank C - Left Approach", new Vector3(-4.8f, Floor + 1.3f, 57.3f), new Vector3(14f, 2.6f, 1f));
-        FittedBox(crate, parent, "Ice Bank D - Final Turn", new Vector3(-14.8f, Floor + 1.45f, 63.6f), new Vector3(10.4f, 2.9f, 1f));
-
-        Transform raised = Group("Optional Raised Crate Run", parent);
-        Stage2ObstacleCourseLayout.Landing[] route = IceLandings;
-        for (int i = 0; i < route.Length; i++)
-            IceLanding(raised, "Ice " + i.ToString("00") + (i == route.Length - 1 ? " - Overlook" : ""), route[i], crate, shaft, cap);
-
-        Transform shortcut = Group("Optional Inside Line - Precision Pillars", parent);
-        IceLanding(shortcut, "Shortcut 01", new Stage2ObstacleCourseLayout.Landing(-11.2f, 48.8f, 2.7f, 2.8f, 2.8f, true), crate, shaft, cap);
-        IceLanding(shortcut, "Shortcut 02", new Stage2ObstacleCourseLayout.Landing(-8.8f, 50.5f, 3.2f, 2.8f, 2.8f, true), crate, shaft, cap);
-        IceLanding(shortcut, "Shortcut 03", new Stage2ObstacleCourseLayout.Landing(-6.2f, 52.7f, 3.7f, 2.8f, 2.8f, true), crate, shaft, cap);
-    }
-
-    private static void IceLanding(Transform parent, string name, Stage2ObstacleCourseLayout.Landing landing,
-        GameObject crate, GameObject shaft, GameObject cap)
-    {
-        Transform group = Group(name, parent);
-        float rise = landing.Top.y - Floor;
-        if (landing.Round)
-            ReusedMesh(cap, group, "Ice Crate Pillar Cap", landing.Top - Vector3.up * 0.15f,
-                new Vector3(landing.Size.x, 0.3f, landing.Size.y), true);
-        else
-            FittedBox(crate, group, "Ice Crate Landing", landing.Top - Vector3.up * 0.225f,
-                new Vector3(landing.Size.x, 0.45f, landing.Size.y), landing.Yaw);
-        float thickness = landing.Round ? 0.3f : 0.45f;
-        float stemHeight = rise - thickness;
-        if (stemHeight > 0.1f)
-            ReusedMesh(shaft, group, "Ice Crate Support", new Vector3(landing.Top.x, Floor + stemHeight * 0.5f, landing.Top.z),
-                new Vector3(0.7f, stemHeight, 0.7f), true);
+        // Banks reach the room edge at alternate ends. Their height prevents
+        // bypassing the turns by hopping over them; every required path is flat.
+        for (int i = 0; i < 5; i++)
+        {
+            bool leftGap = i % 2 == 0;
+            float minX = leftGap ? -15.8f : -20f;
+            float maxX = leftGap ? 3f : -1.6f;
+            FittedBox(crate, parent, "Ice Bank " + (i + 1) + (leftGap ? " - Turn Left" : " - Turn Right"),
+                new Vector3((minX + maxX) * .5f, Floor + 1.6f, 36f + i * 6f),
+                new Vector3(maxX - minX, 3.2f, 1f));
+        }
+        // Offset posts form chicanes within the cross-room straights. These
+        // leave more than a player capsule of clearance on the intended line.
+        for (int lane = 0; lane < 4; lane++)
+        {
+            float z = 39f + lane * 6f;
+            FittedBox(crate, parent, "Ice Slalom " + lane + " A", new Vector3(-12f, Floor + 1.6f, z + 1.65f), new Vector3(1.2f, 3.2f, 1.7f));
+            FittedBox(crate, parent, "Ice Slalom " + lane + " B", new Vector3(-5f, Floor + 1.6f, z - 1.65f), new Vector3(1.2f, 3.2f, 1.7f));
+        }
+        FittedBox(crate, parent, "Ice Final Chicane", new Vector3(-7f, Floor + 1.6f, 62.6f), new Vector3(1.2f, 3.2f, 2f));
     }
 
     private static void BuildMaze(Transform parent, GameObject crate, GameObject shaft, GameObject cap)
