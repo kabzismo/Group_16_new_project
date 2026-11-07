@@ -38,6 +38,10 @@ public class Hint : MonoBehaviour
     }
 
     public void StartHint() => TryStartHint(lines, null);
+    public static void CancelActiveHint()
+    {
+        if (activeHint != null) activeHint.Close(false);
+    }
     public void StartHint(string[] newLines) => TryStartHint(newLines, null);
 
     public bool TryStartHint(string[] newLines, System.Action onComplete)

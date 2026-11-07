@@ -22,22 +22,31 @@ namespace FPSStarter
         private bool ending;
 
         public int ClaimedCount => claimedKeyIds.Count;
+        public bool IsEnding => ending;
 
         public bool HasCollected(string keyId) => claimedKeyIds.Contains(keyId);
 
         public bool Claim(GameObject key)
         {
             if (ending || key == null) return false;
-            if (!claimed.Add(key.GetInstanceID())) return false;
-
             CarryableObject carryable = key.GetComponent<CarryableObject>();
-            if (carryable != null) claimedKeyIds.Add(carryable.ItemId);
+            if (carryable == null || System.Array.IndexOf(RequiredKeyIds, carryable.ItemId) < 0 ||
+                claimedKeyIds.Contains(carryable.ItemId) || !claimed.Add(key.GetInstanceID())) return false;
+            claimedKeyIds.Add(carryable.ItemId);
 
             GameSession.CollectedItems = claimedKeyIds.Count;
 
-            if (HasAllRequiredKeys())
-                StartCoroutine(EndStage());
+            // Authored stages finish at the exit table. Older scenes without
+            // that table retain their immediate four-key completion behaviour.
+            if (FindFirstObjectByType<Stage2ExitInteractable>() == null) TryComplete();
 
+            return true;
+        }
+
+        public bool TryComplete()
+        {
+            if (ending || !HasAllRequiredKeys()) return false;
+            StartCoroutine(EndStage());
             return true;
         }
 
@@ -53,6 +62,13 @@ namespace FPSStarter
         private IEnumerator EndStage()
         {
             ending = true;
+
+            Hint.CancelActiveHint();
+            foreach (HintTrigger hint in FindObjectsByType<HintTrigger>(FindObjectsSortMode.None))
+            {
+                if (hint.promptUI != null) hint.promptUI.SetActive(false);
+                hint.enabled = false;
+            }
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -93,6 +109,8 @@ namespace FPSStarter
             GUI.Label(
                 new Rect(18f, 16f, 420f, 28f),
                 "Keys: " + ClaimedCount + " / " + RequiredKeys);
+            if (HasAllRequiredKeys() && FindFirstObjectByType<Stage2ExitInteractable>() != null)
+                GUI.Label(new Rect(18f, 44f, 540f, 28f), "All room keys recovered. Return to the exit key/table.");
         }
     }
 }

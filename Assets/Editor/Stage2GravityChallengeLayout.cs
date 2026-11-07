@@ -48,9 +48,10 @@ internal static class Stage2GravityChallengeLayout
                 Undo.RecordObject(hint, "Update high gravity hint");
                 hint.hintLines = hint.hintLines.Where(line =>
                     !line.StartsWith("The maze now has red") && !line.StartsWith("Ride the blue") &&
-                    !line.StartsWith("Plan each crossing") && !line.StartsWith("Click, press Enter")).ToArray();
+                    !line.StartsWith("Plan each crossing") && !line.StartsWith("Click, press Enter") &&
+                    !line.StartsWith("The enemy hunts after")).ToArray();
                 if (!hint.hintLines.Any(l => l.Contains("Door .002")))
-                    hint.hintLines = hint.hintLines.Concat(new[] { "The enemy hunts after you finish this hint. If caught, you return beside Door .002." }).ToArray();
+                    hint.hintLines = hint.hintLines.Concat(new[] { "The enemy is already in the maze and hunts when you enter. If caught, you return beside Door .002." }).ToArray();
             }
             if (hint.entranceRoom == low && !hint.hintLines.Any(l => l.Contains("See-through")))
             {

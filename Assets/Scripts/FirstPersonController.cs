@@ -328,6 +328,13 @@ namespace FPSStarter
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
+            if (currentMechanic == RoomMechanic.Ice && Mathf.Abs(hit.normal.y) < 0.2f)
+            {
+                // Discard momentum into a bank while retaining the component
+                // along it, so sliding turns do not store a push into the wall.
+                float inward = Vector3.Dot(horizontalVelocity, hit.normal);
+                if (inward < 0f) horizontalVelocity -= hit.normal * inward;
+            }
             if (hit.normal.y > 0.5f && verticalVelocity <= 0f)
                 hit.collider.GetComponentInParent<TimedGravityPlatform>()?.Land();
             if (currentMechanic == RoomMechanic.Ice && verticalVelocity <= 0f && hit.normal.y > 0.5f && IsBoxSurface(hit.collider))

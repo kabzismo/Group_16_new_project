@@ -61,7 +61,7 @@ namespace FPSStarter
 
         public void Land()
         {
-            if (counting || collapsed || Hint.IsReading || room == null || !room.EntranceHintCompleted) return;
+            if (counting || collapsed || Hint.IsReading || room == null) return;
             counting = true;
             remaining = secondsToCollapse;
         }
