@@ -14,6 +14,22 @@ namespace FPSStarter
 
         public string CurrentPrompt { get; private set; }
         private CarryableObject heldObject;
+        private int priorityInteractionFrame = -1;
+
+        // Hints also listen for E. Resolve the current ray directly so the
+        // result is valid regardless of which component updates first.
+        public bool HasPriorityInteraction
+        {
+            get
+            {
+                if (priorityInteractionFrame == Time.frameCount) return true;
+                if (!isActiveAndEnabled || playerCamera == null || heldObject != null) return false;
+                if (!Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit,
+                    interactionDistance, interactionMask, QueryTriggerInteraction.Ignore)) return false;
+                CarryableObject key = hit.collider.GetComponentInParent<CarryableObject>();
+                return key != null && key.IsStage2Key || hit.collider.GetComponentInParent<Stage2ExitInteractable>() != null;
+            }
+        }
 
         private void Awake()
         {
@@ -61,6 +77,7 @@ namespace FPSStarter
                     // from the room so they cannot be collected more than once.
                     if (carryable.IsStage2Key)
                     {
+                        priorityInteractionFrame = Time.frameCount;
                         Stage2KeyHunt hunt = FindFirstObjectByType<Stage2KeyHunt>();
                         if (hunt != null)
                         {
@@ -79,8 +96,14 @@ namespace FPSStarter
             IInteractable interactable = FindInteractable(hit.collider);
             if (interactable == null) return;
             CurrentPrompt = interactable.Prompt;
-            if (interactPressed) interactable.Interact(gameObject);
+            if (interactPressed)
+            {
+                if (interactable is Stage2ExitInteractable) priorityInteractionFrame = Time.frameCount;
+                interactable.Interact(gameObject);
+            }
         }
+
+        private void OnDisable() => CurrentPrompt = string.Empty;
 
         private static IItemReceiver FindReceiver(Collider collider)
         {

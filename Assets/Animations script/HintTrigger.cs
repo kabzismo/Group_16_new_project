@@ -22,9 +22,11 @@ public class HintTrigger : MonoBehaviour
 
     private bool playerInRange;
     private bool used;
+    private FPSStarter.PlayerInteractor interactor;
 
     void Start()
     {
+        interactor = FindFirstObjectByType<FPSStarter.PlayerInteractor>();
         if (promptUI != null)
             promptUI.SetActive(false);
 
@@ -40,6 +42,10 @@ public class HintTrigger : MonoBehaviour
         if (!playerInRange || !isUnlocked || used || Hint.IsReading)
             return;
 
+        bool keyInteraction = interactor != null && interactor.HasPriorityInteraction;
+        if (promptUI != null) promptUI.SetActive(!keyInteraction);
+        if (keyInteraction) return;
+
         if (Keyboard.current != null &&
             Keyboard.current[interactKey].wasPressedThisFrame)
         {
@@ -54,6 +60,7 @@ public class HintTrigger : MonoBehaviour
 
     public void ShowHint()
     {
+        if (interactor != null && interactor.HasPriorityInteraction) return;
         if (hint == null || !hint.TryStartHint(hintLines, () =>
         {
             if (entranceRoom != null) entranceRoom.CompleteEntranceHint();

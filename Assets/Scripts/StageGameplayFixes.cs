@@ -292,12 +292,12 @@ namespace FPSStarter
 
             for (int index = 0; index < roomOrder.Length; index++)
             {
-                if (availableKeys.Count == 0) break;
-
-                CarryableObject roomKey = availableKeys[0];
-                availableKeys.RemoveAt(0);
                 string keyId = "stage2-key-" + roomOrder[index].ToString().ToLowerInvariant();
-                roomKey.SetItemId(keyId);
+                // This setup is repeated after two frames. Never renumber the
+                // remaining keys when an earlier pickup has already disappeared.
+                CarryableObject roomKey = availableKeys.Find(key => key.name == "Big Key_" + (index + 1)) ??
+                    availableKeys.Find(key => key.ItemId == keyId);
+                if (roomKey != null) roomKey.SetItemId(keyId);
                 // Key identities must not shift if an exit door is missing.
                 DoorOutward door = FindDoor(doorNames[index], importedStage2);
                 if (door != null) door.RequireKey(keyId);

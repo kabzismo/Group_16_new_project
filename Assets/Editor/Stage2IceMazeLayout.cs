@@ -29,16 +29,41 @@ internal static class Stage2IceMazeLayout
     internal static Vector3 EnemyHome => Ground(61.6f, 48.2f);
 
     // Continuous floor route: alternate wide braking turns and tighter slalom lanes.
-    internal static Vector3[] IceWalkRoute => new[]
+    internal static Vector3[] IceWalkRoute
     {
-        Ground(-8.64f, 30.5f), Ground(-17.7f, 33.5f), Ground(-17.7f, 38.5f),
-        Ground(-12f, 39f), Ground(-5f, 39f), Ground(0.5f, 39f), Ground(0.5f, 44.5f),
-        Ground(-5f, 45f), Ground(-12f, 45f), Ground(-17.7f, 45f), Ground(-17.7f, 50.5f),
-        Ground(-12f, 51f), Ground(-5f, 51f), Ground(0.5f, 51f), Ground(0.5f, 56.5f),
-        Ground(-5f, 57f), Ground(-12f, 57f), Ground(-17.7f, 57f), Ground(-17.7f, 63f),
-        Ground(-12f, 63f), Ground(-7f, 64.5f), Ground(-3f, 66.3f),
-        Ground(1.5f, 66.3f), Ground(2.4f, 67.4f)
-    };
+        get
+        {
+            var route = new List<Vector3> { Ground(-8.64f, 30.5f), Ground(-14f, 30.5f), Ground(-17.7f, 33.5f) };
+            for (int lane = 0; lane < 4; lane++)
+            {
+                float z = 39f + lane * 6f;
+                var turns = new[] {
+                    Ground(-17.7f, z), Ground(-14.2f, z - .9f), Ground(-11.8f, z - .9f),
+                    Ground(-10.2f, z + .9f), Ground(-7.8f, z + .9f),
+                    Ground(-6.2f, z - .9f), Ground(-3.8f, z - .9f), Ground(.5f, z)
+                };
+                route.AddRange(lane % 2 == 0 ? turns : turns.Reverse());
+            }
+            route.AddRange(new[] { Ground(-17.7f, 63f), Ground(-12f, 63f), Ground(-7f, 64.5f),
+                Ground(-3f, 66.3f), Ground(1.5f, 66.3f), Ground(2.4f, 67.4f) });
+            return route.ToArray();
+        }
+    }
+
+    [MenuItem("Tools/Stage 2/Rebuild High Gravity Maze Walls Only")]
+    internal static void RebuildMazeOnly()
+    {
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.name != "Stage 2" || EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Open Stage 2 outside Play mode first.");
+        Transform root = Find(RootName);
+        Transform old = root.Find(MazeName);
+        if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
+        BuildMaze(Group(MazeName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject,
+            Find("Objects/Bat/Cylinder.001").gameObject, Find("Objects/Bat/Cylinder.002").gameObject);
+        Physics.SyncTransforms();
+        EditorSceneManager.MarkSceneDirty(scene);
+    }
 
     [MenuItem("Tools/Stage 2/Rebuild Ice Ground Course Only")]
     internal static void RebuildIceOnly()
@@ -181,14 +206,19 @@ internal static class Stage2IceMazeLayout
                 new Vector3((minX + maxX) * .5f, Floor + 1.6f, 36f + i * 6f),
                 new Vector3(maxX - minX, 3.2f, 1f));
         }
-        // Offset posts form chicanes within the cross-room straights. These
-        // leave more than a player capsule of clearance on the intended line.
+        // Alternating fingers overlap the banks, forcing ground-level steering
+        // around their tips instead of leaving an uninterrupted centre lane.
         for (int lane = 0; lane < 4; lane++)
         {
             float z = 39f + lane * 6f;
-            FittedBox(crate, parent, "Ice Slalom " + lane + " A", new Vector3(-12f, Floor + 1.6f, z + 1.65f), new Vector3(1.2f, 3.2f, 1.7f));
-            FittedBox(crate, parent, "Ice Slalom " + lane + " B", new Vector3(-5f, Floor + 1.6f, z - 1.65f), new Vector3(1.2f, 3.2f, 1.7f));
+            FittedBox(crate, parent, "Ice Slalom " + lane + " A", new Vector3(-13f, Floor + 1.6f, z + 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
+            FittedBox(crate, parent, "Ice Slalom " + lane + " B", new Vector3(-9f, Floor + 1.6f, z - 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
+            FittedBox(crate, parent, "Ice Slalom " + lane + " C", new Vector3(-5f, Floor + 1.6f, z + 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
         }
+        FittedBox(crate, parent, "Ice Entry Island A", new Vector3(-11f, Floor + 1.6f, 32f), new Vector3(2f, 3.2f, 2f));
+        FittedBox(crate, parent, "Ice Entry Island B", new Vector3(-15f, Floor + 1.6f, 34.4f), new Vector3(1.6f, 3.2f, 1.4f));
+        FittedBox(crate, parent, "Ice Exit Island A", new Vector3(-12f, Floor + 1.6f, 65f), new Vector3(1.4f, 3.2f, 2f));
+        FittedBox(crate, parent, "Ice Exit Island B", new Vector3(-3.5f, Floor + 1.6f, 63.3f), new Vector3(1.4f, 3.2f, 2f));
         FittedBox(crate, parent, "Ice Final Chicane", new Vector3(-7f, Floor + 1.6f, 62.6f), new Vector3(1.2f, 3.2f, 2f));
     }
 
@@ -242,8 +272,8 @@ internal static class Stage2IceMazeLayout
         bool[,] open = new bool[count, count];
         bool[] visited = new bool[count];
         var stack = new Stack<int>();
-        // Selected for a 19-cell solution with thirteen turns across all five
-        // columns; other seeds can accidentally create a straight edge highway.
+        // Keep the deterministic route spread across the room; with the three
+        // loops below, the entry-to-key solution visits 23 cells.
         uint random = 20261027;
         int Next(int maximum) { random = unchecked(random * 1664525u + 1013904223u); return (int)(random % (uint)maximum); }
         int first = Index(0, Rows - 1);
@@ -266,7 +296,9 @@ internal static class Stage2IceMazeLayout
         for (int current = 0; current < count; current++)
             foreach (int neighbour in Neighbours(current))
                 if (current < neighbour && !open[current, neighbour]) closedEdges.Add(new Vector2Int(current, neighbour));
-        for (int i = 0; i < 8 && closedEdges.Count > 0; i++)
+        // Keep three alternate loops; the other five shortcut openings become walls.
+        // The spanning tree above still connects every cell, key and exit.
+        for (int i = 0; i < 3 && closedEdges.Count > 0; i++)
         {
             int chosen = Next(closedEdges.Count);
             Vector2Int edge = closedEdges[chosen];

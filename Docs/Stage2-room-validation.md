@@ -16,3 +16,12 @@ Validated in Unity 6000.3.20f1 Play mode using temporary editor checks:
 - Enemy catch returned the player to the saved Door .002 checkpoint, approximately `(49.33, -3.57, 65.93)`.
 
 The route clearance check is not a full manual playthrough or a difficulty assessment. A human playthrough remains useful for tuning the new sliding course. Existing standalone builds must be rebuilt to include these source and scene changes.
+
+## Difficulty expansion — 6 November 2026
+
+- High Gravity: closed five shortcut openings, retaining three alternate loops. The shortest entrance-to-key path increases from 19 to 23 cells; all 45 cells remain connected.
+- Ice: added eight obstacles (four extra slalom fingers and four entry/exit islands). Extended the slalom fingers into the lanes so players must weave around their tips. The progression route remains entirely on the floor.
+- Hot: replaced the old route with 27 main landings, repeated hairpin turns, smaller precision tops, a higher key summit and a seven-landing descent. Removed the obsolete shortcuts. Shifted the exit frame and final landing to keep the final jump clear of support columns.
+- Preserved all moving/timed platform hierarchies, transforms and serialized component values; compared before and after rebuilding. No runtime movement or platform scripts changed.
+
+Unity Play mode validation passed: 760 player-capsule floor-clearance samples in Ice, 589 in the maze (excluding collectible keys and operable doors), complete enemy NavMesh paths to all 45 maze cells, and collision-free sampled ballistic arcs for all 26 Hot-course jumps using the current controller's jump height, gravity, speed and capsule dimensions. Reviewed rendered overhead views of all three rooms. These geometric checks do not replace a full manual difficulty playthrough.
