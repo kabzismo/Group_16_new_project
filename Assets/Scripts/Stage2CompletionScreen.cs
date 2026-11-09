@@ -5,7 +5,7 @@ namespace FPSStarter
     public sealed class Stage2CompletionScreen : MonoBehaviour
     {
         [Header("Screen Content")]
-        [SerializeField] private string heading = "CHALLENGE COMPLETE";
+        [SerializeField] private string heading = "GAME ENDED";
         [SerializeField, TextArea(2, 4)] private string message = "All four keys recovered.\nYou made it through every room.";
 
         [Header("Screen Appearance")]

@@ -19,15 +19,7 @@ internal static class Stage2GravityChallengeLayout
         var high = rooms.First(r => r.Mechanic == RoomMechanic.HighGravity);
         var course = GameObject.Find(Stage2ObstacleCourseLayout.RootName).transform.Find(Stage2ObstacleCourseLayout.LowCourseName);
         // Add behaviour to the existing authored Blender crate landings, preserving meshes and textures.
-        foreach (int index in new[] { 2, 7, 18 })
-        {
-            var landing = FindLanding(course, index);
-            var moving = landing.GetComponent<MovingGravityPlatform>() ?? Undo.AddComponent<MovingGravityPlatform>(landing.gameObject);
-            moving.room = low;
-            moving.travel = new Vector3(.55f, 0f, 0f);
-            moving.period = 4f;
-            EditorUtility.SetDirty(moving);
-        }
+        ConfigureMovingPlatforms(course, low);
         foreach (int index in new[] { 4, 11, 20 })
         {
             var landing = FindLanding(course, index);
@@ -41,33 +33,40 @@ internal static class Stage2GravityChallengeLayout
         }
         var old = GameObject.Find("High Gravity - Moving and Timed Crossings");
         if (old != null) Undo.DestroyObjectImmediate(old);
-        foreach (var hint in Object.FindObjectsByType<HintTrigger>(FindObjectsSortMode.None))
-        {
-            if (hint.entranceRoom == high)
-            {
-                Undo.RecordObject(hint, "Update high gravity hint");
-                hint.hintLines = hint.hintLines.Where(line =>
-                    !line.StartsWith("The maze now has red") && !line.StartsWith("Ride the blue") &&
-                    !line.StartsWith("Plan each crossing") && !line.StartsWith("Click, press Enter") &&
-                    !line.StartsWith("The enemy hunts after")).ToArray();
-                if (!hint.hintLines.Any(l => l.Contains("Door .002")))
-                    hint.hintLines = hint.hintLines.Concat(new[] { "The enemy is already in the maze and hunts when you enter. If caught, you return beside Door .002." }).ToArray();
-            }
-            if (hint.entranceRoom == low && !hint.hintLines.Any(l => l.Contains("See-through")))
-            {
-                Undo.RecordObject(hint, "Update low gravity hint");
-                hint.hintLines = hint.hintLines.Concat(new[] {
-                    "Some of these crates move. Time your jump and ride them across.",
-                    "Other crates phase out shortly after you land. Move quickly!",
-                    "Solid crates support you. See-through crates cannot be landed on; wait for them to become solid again."
-                }).ToArray();
-            }
-            EditorUtility.SetDirty(hint);
-        }
         ConfigureCheckpoint(high, low);
         Physics.SyncTransforms();
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
+    }
+    [MenuItem("Tools/Stage 2/Increase Low Gravity Platform Movement")]
+    internal static void IncreasePlatformMovement()
+    {
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.name != "Stage 2" || EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Open Stage 2 outside Play mode first.");
+        EditorSceneManager.SaveScene(scene, "Temp/BeforeLowGravityMotion.unity", true);
+        var low = Object.FindObjectsByType<RoomMechanicVolume>(FindObjectsSortMode.None)
+            .First(r => r.Mechanic == RoomMechanic.LowGravity);
+        var course = GameObject.Find(Stage2ObstacleCourseLayout.RootName).transform.Find(Stage2ObstacleCourseLayout.LowCourseName);
+        ConfigureMovingPlatforms(course, low);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+    }
+
+    private static void ConfigureMovingPlatforms(Transform course, RoomMechanicVolume low)
+    {
+        // Leave the rest stops, summit, and collapsing crates stationary.
+        // 1.8 m either side gives a visible 3.6 m sweep over six seconds.
+        foreach (int index in new[] { 2, 7, 9, 12, 14, 18, 24 })
+        {
+            var landing = FindLanding(course, index);
+            var moving = landing.GetComponent<MovingGravityPlatform>() ?? Undo.AddComponent<MovingGravityPlatform>(landing.gameObject);
+            Undo.RecordObject(moving, "Increase low gravity platform movement");
+            moving.room = low;
+            moving.travel = new Vector3(1.8f, 0f, 0f);
+            moving.period = 6f;
+            EditorUtility.SetDirty(moving);
+        }
     }
     private static Transform FindLanding(Transform course, int index) =>
         course.Cast<Transform>().First(t => t.name.StartsWith("Low " + index.ToString("00") + " -"));

@@ -12607,8 +12607,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
-  travel: {x: 0.55, y: 0, z: 0}
-  period: 4
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
   room: {fileID: 1279329336}
 --- !u!1 &255458462
 GameObject:
@@ -12767,8 +12767,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
-  travel: {x: 0.55, y: 0, z: 0}
-  period: 4
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
   room: {fileID: 1279329336}
 --- !u!1 &256816149
 GameObject:
@@ -24300,12 +24300,16 @@ MonoBehaviour:
   hint: {fileID: 207116524}
   entranceRoom: {fileID: 1908704043}
   hintLines:
-  - Stay on the icy floor and weave around the tall banks. The key is at ground level
-    at the far end.
-  - You keep sliding after releasing movement. Brake before each turn; steer against
-    your momentum to change direction.
-  - The gaps alternate sides. Take the slalom lanes slowly, then build speed on the
-    straights. No jumping is needed.
+  - Wow a hint so soon..
+  - Well inside this door you will be tasked with finding a key that could help you
+    ...
+  - In your sucessful attempt to escape.
+  - But I advise you to put on a jacket, as this weather won't be as nice as I am
+  - You will be sliding across on the icy floor as you navigate temperatures way
+    below what you're use to.
+  - Be sure to collect all 4 keys from each room, so you can 'escape'
+  - 'Have fun and come back for another hint when you fail... '
+  - again...
   interactKey: 19
   promptUI: {fileID: 837866643}
   hintIcon: {fileID: 1041871678}
@@ -24726,6 +24730,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 558014364}
+  - component: {fileID: 558014365}
   m_Layer: 0
   m_Name: Low 12 - Angled Ledge
   m_TagString: Untagged
@@ -24749,6 +24754,21 @@ Transform:
   - {fileID: 702803912}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &558014365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558014363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
+  room: {fileID: 1279329336}
 --- !u!1 &558674143
 GameObject:
   m_ObjectHideFlags: 0
@@ -30722,8 +30742,6 @@ MonoBehaviour:
     key.
   - It"ll be a joy watching you suffer-
   - again
-  - The enemy is already in the maze and hunts when you enter. If caught, you return
-    beside Door .002.
   interactKey: 19
   promptUI: {fileID: 837866643}
   hintIcon: {fileID: 604519084}
@@ -32214,7 +32232,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b3f66a385dd70a941b76ef7eca17caec, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: '::'
   hint: {fileID: 207116524}
   entranceRoom: {fileID: 1279329336}
@@ -32228,10 +32246,6 @@ MonoBehaviour:
   - This could take time, so don't be surprised when you fail
   - 'Have fun and come back for another hint when you fail... '
   - again
-  - Some of these crates move. Time your jump and ride them across.
-  - Other crates phase out shortly after you land. Move quickly!
-  - Solid crates support you. See-through crates cannot be landed on; wait for them
-    to become solid again.
   interactKey: 19
   promptUI: {fileID: 837866643}
   hintIcon: {fileID: 1596026040}
@@ -38522,6 +38536,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 705086847}
+  - component: {fileID: 705086848}
   m_Layer: 0
   m_Name: Low 24 - Angled Ledge
   m_TagString: Untagged
@@ -38545,6 +38560,21 @@ Transform:
   - {fileID: 775485381}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &705086848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705086846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
+  room: {fileID: 1279329336}
 --- !u!1 &712187676
 GameObject:
   m_ObjectHideFlags: 0
@@ -46027,8 +46057,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
-  travel: {x: 0.55, y: 0, z: 0}
-  period: 4
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
   room: {fileID: 1279329336}
 --- !u!1 &813110880
 GameObject:
@@ -74885,7 +74915,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -74895,7 +74925,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text:
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -99250,6 +99280,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1534715468}
+  - component: {fileID: 1534715469}
   m_Layer: 0
   m_Name: Low 09 - Angled Ledge
   m_TagString: Untagged
@@ -99273,6 +99304,21 @@ Transform:
   - {fileID: 54593489}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1534715469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534715467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
+  room: {fileID: 1279329336}
 --- !u!1 &1536954720
 GameObject:
   m_ObjectHideFlags: 0
@@ -99525,7 +99571,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -126819,7 +126865,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
@@ -126836,7 +126882,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
@@ -126992,7 +127038,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -127558,7 +127604,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -138032,7 +138078,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -138523,6 +138569,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2041633598}
+  - component: {fileID: 2041633599}
   m_Layer: 0
   m_Name: Low 14 - Angled Ledge
   m_TagString: Untagged
@@ -138546,6 +138593,21 @@ Transform:
   - {fileID: 158988594}
   m_Father: {fileID: 1607438266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2041633599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041633597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd09b7d41705246ae34107a6c1c040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.MovingGravityPlatform
+  travel: {x: 1.8, y: 0, z: 0}
+  period: 6
+  room: {fileID: 1279329336}
 --- !u!1 &2045005905
 GameObject:
   m_ObjectHideFlags: 0
@@ -139129,7 +139191,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -152985,18 +153047,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &7658519821362037215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7658519821362037213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a047cf63bc9a44eeb10bd28205c67741, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.Stage2ExitInteractable
 --- !u!65 &7658519821362037214
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -153018,6 +153068,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7658519821362037215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7658519821362037213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a047cf63bc9a44eeb10bd28205c67741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSStarter.Stage2ExitInteractable
 --- !u!4 &7662407973600047091
 Transform:
   m_ObjectHideFlags: 0
