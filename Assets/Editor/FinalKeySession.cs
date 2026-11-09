@@ -22,6 +22,7 @@ internal static class FinalKeySession
         {
             if(cmd=="play"){EditorApplication.isPlaying=true;return;}
             if(cmd=="stop"){EditorApplication.isPlaying=false;return;}
+            if(cmd=="platforms") { Stage2GravityChallengeLayout.IncreasePlatformMovement(); return; }
             if(cmd=="bind")
             {
                 if(EditorApplication.isPlaying)throw new Exception("Exit play first");

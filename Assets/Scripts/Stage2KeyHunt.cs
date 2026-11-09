@@ -36,9 +36,9 @@ namespace FPSStarter
 
             GameSession.CollectedItems = claimedKeyIds.Count;
 
-            // Authored stages finish at the exit table. Older scenes without
-            // that table retain their immediate four-key completion behaviour.
-            if (FindFirstObjectByType<Stage2ExitInteractable>() == null) TryComplete();
+            // The fourth distinct room key completes the game immediately,
+            // including scenes that contain the optional exit table.
+            TryComplete();
 
             return true;
         }
@@ -109,8 +109,6 @@ namespace FPSStarter
             GUI.Label(
                 new Rect(18f, 16f, 420f, 28f),
                 "Keys: " + ClaimedCount + " / " + RequiredKeys);
-            if (HasAllRequiredKeys() && FindFirstObjectByType<Stage2ExitInteractable>() != null)
-                GUI.Label(new Rect(18f, 44f, 540f, 28f), "All room keys recovered. Return to the exit key/table.");
         }
     }
 }

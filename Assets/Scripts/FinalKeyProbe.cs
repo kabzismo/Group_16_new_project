@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.IO;
@@ -22,7 +23,7 @@ public sealed class FinalKeyProbe : MonoBehaviour
     }
     IEnumerator Start()
     {
-        File.WriteAllText(Report,"Final exit interaction regression, Unity Play mode\n");
+        File.WriteAllText(Report,"Fourth-key completion regression, Unity Play mode\n");
         Application.runInBackground=true;
         var hunt=FindFirstObjectByType<Stage2KeyHunt>();
         var exit=FindFirstObjectByType<Stage2ExitInteractable>();
@@ -43,23 +44,26 @@ public sealed class FinalKeyProbe : MonoBehaviour
         Check(!hunt.IsEnding&&hunt.ClaimedCount==0,"E at locked exit does not finish or grant keys");
         var keys=FindObjectsByType<CarryableObject>(FindObjectsSortMode.None).Where(k=>k.IsStage2Key).OrderBy(k=>k.name,StringComparer.Ordinal).ToArray();
         Check(keys.Length==4,"Exactly four room keys configured");
-        for(int i=0;i<keys.Length;i++)
+        for(int i=0;i<keys.Length-1;i++)
         {
             Check(hunt.Claim(keys[i].gameObject),"Room key accepted: "+keys[i].ItemId);
+            Check(!hunt.Claim(keys[i].gameObject),"Duplicate key rejected");
+            Check(!hunt.IsEnding,"Game continues before fourth key");
             Destroy(keys[i].gameObject);yield return null;
             typeof(StageGameplayFixes).GetMethod("ConfigureStage2KeyDoorLocks",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,null);
         }
-        Check(hunt.ClaimedCount==4&&!hunt.IsEnding,"All four distinct keys recorded; exit awaits final interaction");
-        var hintObject=new GameObject("Temporary overlapping entrance hint");
-        var hint=hintObject.AddComponent<HintTrigger>();
-        hint.hint=FindFirstObjectByType<Hint>();hint.hintLines=new[]{"This hint must not replace the exit."};
-        hint.promptUI=new GameObject("Temporary speak prompt");
-        yield return null;
-        typeof(HintTrigger).GetField("playerInRange",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(hint,true);
+        // Exercise the actual E-key pickup path with the exit table still present.
+        var finalKey=keys[keys.Length-1];
+        var keyBounds=finalKey.GetComponent<BoxCollider>().bounds;
+        camera.transform.position=keyBounds.center+Vector3.up*2f;
+        camera.transform.LookAt(keyBounds.center);
+        Physics.SyncTransforms();
         yield return null;yield return null;
-        Check(interactor.CurrentPrompt.Contains("finish game")&&!hint.promptUI.activeSelf,"Final-key prompt takes priority over overlapping speak prompt");
+        Check(interactor.CurrentPrompt.Contains("Pick up"),"Actual interaction ray reaches fourth key");
         pressed=true;yield return null;yield return null;pressed=false;yield return null;
-        Check(hunt.IsEnding&&!Hint.IsReading,"Pressing E at unlocked exit starts ending without dialogue");
+        Check(hunt.ClaimedCount==4&&hunt.IsEnding&&!Hint.IsReading,"Fourth key pickup immediately ends game with exit table present");
+        Check(finalKey==null,"Fourth collected key removed");
+        Check(!hunt.TryComplete(),"Completion cannot start twice");
         var screen=FindFirstObjectByType<Stage2CompletionScreen>();
         Check(screen!=null&&(bool)typeof(Stage2CompletionScreen).GetField("visible",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(screen),"Existing challenge-complete screen is visible");
         Check(!player.enabled&&!interactor.enabled&&interactor.CurrentPrompt==string.Empty,"Completion freezes controls and clears interaction prompt");
@@ -89,3 +93,5 @@ static class FinalKeyShutdownCheck
         };
     }
 }
+
+#endif

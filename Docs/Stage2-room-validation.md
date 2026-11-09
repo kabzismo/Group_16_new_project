@@ -25,3 +25,17 @@ The route clearance check is not a full manual playthrough or a difficulty asses
 - Preserved all moving/timed platform hierarchies, transforms and serialized component values; compared before and after rebuilding. No runtime movement or platform scripts changed.
 
 Unity Play mode validation passed: 760 player-capsule floor-clearance samples in Ice, 589 in the maze (excluding collectible keys and operable doors), complete enemy NavMesh paths to all 45 maze cells, and collision-free sampled ballistic arcs for all 26 Hot-course jumps using the current controller's jump height, gravity, speed and capsule dimensions. Reviewed rendered overhead views of all three rooms. These geometric checks do not replace a full manual difficulty playthrough.
+
+## Dialogue restoration and fourth-key completion — 9 November 2026
+
+Restored all four room hint arrays verbatim from `e568138^`, before the layout-tool dialogue edits. Removed hint-writing code from the Ice and gravity layout tools so rebuilding geometry preserves authored dialogue.
+
+The fourth distinct room key now starts completion immediately even when the exit table exists. The completion heading reads `GAME ENDED`; the existing four-second shutdown countdown remains.
+
+Unity 6000.3.20f1 Play-mode regression passed: early exit interaction remains locked, duplicate claims are rejected, the first three keys do not end the game, and an actual E-input pickup of the fourth key starts completion, removes the key, displays the screen, disables controls, and clears the interaction prompt. Play mode stopped after the countdown (4.6 seconds observed). The regression component was moved out of the Editor folder and guarded with UNITY_EDITOR so Unity can attach it during testing without including it in player builds. This is a targeted regression, not a full room playthrough. Existing standalone builds require rebuilding.
+
+## More visible low-gravity movement — 9 November 2026
+
+Expanded moving ledges from 3 to 7: Low 02, 07, 09, 12, 14, 18 and 24. Horizontal amplitude is now 1.8 m each side (3.6 m total sweep), previously 0.55 m (1.1 m sweep). A six-second cycle makes the wider movement readable. Rest stops, the summit, tall pillars and collapsing crates remain stationary. Saved both scene components and layout-tool configuration; dialogue is unchanged.
+
+Unity Play-mode sampling over 7.5 seconds measured 3.60 m travel on all seven ledges, checked their colliders remain within the room's horizontal bounds, and confirmed downward landing rays hit the moving colliders. All 25 jumps have center-to-center ballistic reach windows when sampling 600 launch phases with the current player speed (5 m/s), low-gravity acceleration (14.4 m/s²), and jump height (4.05 m). This range calculation includes target motion during flight, but is not a full collision-path or manual difficulty playthrough.

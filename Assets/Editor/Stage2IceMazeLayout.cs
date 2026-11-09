@@ -76,17 +76,6 @@ internal static class Stage2IceMazeLayout
         if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
         BuildIce(Group(IceName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject);
         MoveKey(Find("Big Key_1"), IceKeyCenter);
-        foreach (var hint in Object.FindObjectsByType<HintTrigger>(FindObjectsSortMode.None))
-        {
-            if (hint.entranceRoom == null || hint.entranceRoom.Mechanic != RoomMechanic.Ice) continue;
-            Undo.RecordObject(hint, "Describe the ice ground course");
-            hint.hintLines = new[] {
-                "Stay on the icy floor and weave around the tall banks. The key is at ground level at the far end.",
-                "You keep sliding after releasing movement. Brake before each turn; steer against your momentum to change direction.",
-                "The gaps alternate sides. Take the slalom lanes slowly, then build speed on the straights. No jumping is needed."
-            };
-            EditorUtility.SetDirty(hint);
-        }
         Physics.SyncTransforms();
         EditorSceneManager.MarkSceneDirty(scene);
     }
