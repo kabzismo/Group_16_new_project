@@ -359,7 +359,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -622, y: 337}
+  m_AnchoredPosition: {x: -622, y: 285}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &100647711
@@ -732,7 +732,7 @@ GameObject:
   - component: {fileID: 221896320}
   - component: {fileID: 221896323}
   - component: {fileID: 221896322}
-  - component: {fileID: 221896321}
+  - component: {fileID: 221896324}
   m_Layer: 5
   m_Name: Speech1A
   m_TagString: Untagged
@@ -759,20 +759,6 @@ RectTransform:
   m_AnchoredPosition: {x: 405, y: 233}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &221896321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221896319}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
-  hoverScale: 1.3
-  hoverSpeed: 1
 --- !u!114 &221896322
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -811,6 +797,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 221896319}
   m_CullTransparentMesh: 1
+--- !u!114 &221896324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221896319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
+  hoverScale: 1.3
+  hoverSpeed: 3
 --- !u!1 &271972813
 GameObject:
   m_ObjectHideFlags: 0
@@ -839,14 +839,14 @@ RectTransform:
   m_GameObject: {fileID: 271972813}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5.78, y: 3.7657578, z: 2.632986}
+  m_LocalScale: {x: 4.3499994, y: 2.834091, z: 1.9815724}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1015282839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 219, y: 331}
+  m_AnchoredPosition: {x: -762, y: 279}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &271972815
@@ -900,7 +900,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
   hoverScale: 1.3
-  hoverSpeed: 1
+  hoverSpeed: 3
 --- !u!1 &317510808
 GameObject:
   m_ObjectHideFlags: 0
@@ -1094,7 +1094,7 @@ GameObject:
   - component: {fileID: 474001684}
   - component: {fileID: 474001687}
   - component: {fileID: 474001686}
-  - component: {fileID: 474001685}
+  - component: {fileID: 474001688}
   m_Layer: 5
   m_Name: Speech1C
   m_TagString: Untagged
@@ -1121,20 +1121,6 @@ RectTransform:
   m_AnchoredPosition: {x: 583, y: -59}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &474001685
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 474001683}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
-  hoverScale: 1.3
-  hoverSpeed: 1
 --- !u!114 &474001686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1173,6 +1159,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 474001683}
   m_CullTransparentMesh: 1
+--- !u!114 &474001688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 474001683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
+  hoverScale: 1.3
+  hoverSpeed: 3
 --- !u!1 &503299593
 GameObject:
   m_ObjectHideFlags: 0
@@ -1479,7 +1479,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
   hoverScale: 1.3
-  hoverSpeed: 1
+  hoverSpeed: 3
 --- !u!1 &657072528
 GameObject:
   m_ObjectHideFlags: 0
@@ -2257,14 +2257,14 @@ RectTransform:
   m_GameObject: {fileID: 1356780070}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6.11, y: 3.9807577, z: 2.783312}
+  m_LocalScale: {x: 4.88, y: 3.179394, z: 2.2230053}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1015282839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -304, y: 337}
+  m_AnchoredPosition: {x: 735, y: 290}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1356780072
@@ -2318,7 +2318,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
   hoverScale: 1.3
-  hoverSpeed: 1
+  hoverSpeed: 3
 --- !u!1 &1416633664
 GameObject:
   m_ObjectHideFlags: 0
@@ -2465,7 +2465,7 @@ GameObject:
   - component: {fileID: 1456454409}
   - component: {fileID: 1456454412}
   - component: {fileID: 1456454411}
-  - component: {fileID: 1456454410}
+  - component: {fileID: 1456454413}
   m_Layer: 5
   m_Name: Speech1B
   m_TagString: Untagged
@@ -2492,20 +2492,6 @@ RectTransform:
   m_AnchoredPosition: {x: -398, y: 314}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1456454410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1456454408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
-  hoverScale: 1.3
-  hoverSpeed: 1
 --- !u!114 &1456454411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2544,6 +2530,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1456454408}
   m_CullTransparentMesh: 1
+--- !u!114 &1456454413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456454408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03d2088665e737e41a8a227525e29ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonHoverEffect
+  hoverScale: 1.3
+  hoverSpeed: 3
 --- !u!1 &1536427385
 GameObject:
   m_ObjectHideFlags: 0
@@ -2924,8 +2924,8 @@ RectTransform:
   - {fileID: 1054501116}
   - {fileID: 48646921}
   - {fileID: 503299594}
-  - {fileID: 882896434}
   - {fileID: 350177828}
+  - {fileID: 882896434}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3030,7 +3030,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -94}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1985725922

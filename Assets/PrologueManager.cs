@@ -88,7 +88,7 @@ public class PrologueManager : MonoBehaviour
         buttonsGroup.interactable = false;
         buttonsGroup.blocksRaycasts = false;
 
-        // Hide all speech bubble groups
+        // Hide all speech bubbles
         for (int i = 0; i < imageBubbleGroups.Length; i++)
         {
             imageBubbleGroups[i].alpha = 0f;
@@ -134,9 +134,13 @@ public class PrologueManager : MonoBehaviour
         }
         else
         {
+            int previousIndex = currentIndex;
+
             currentIndex++;
 
-            StartCoroutine(ChangeImage(currentIndex));
+            StartCoroutine(
+                ChangeImage(previousIndex, currentIndex)
+            );
         }
     }
 
@@ -146,23 +150,25 @@ public class PrologueManager : MonoBehaviour
         if (isTransitioning || currentIndex <= 0)
             return;
 
+        int previousIndex = currentIndex;
+
         currentIndex--;
 
-        StartCoroutine(ChangeImage(currentIndex));
+        StartCoroutine(
+            ChangeImage(previousIndex, currentIndex)
+        );
     }
 
     // CHANGE IMAGE
-    IEnumerator ChangeImage(int targetIndex)
+    IEnumerator ChangeImage(int previousIndex, int targetIndex)
     {
         isTransitioning = true;
 
-        // Hide old buttons and speech bubbles
+        // Fade out buttons
         yield return FadeButtons(1f, 0f);
 
-        yield return FadeSpeechBubbles(
-            targetIndex == currentIndex ? currentIndex : currentIndex - 1,
-            0f
-        );
+        // Fade out old speech bubbles
+        yield return FadeSpeechBubbles(previousIndex, 0f);
 
         // FINAL IMAGE: FADE FROM BLACK
         if (targetIndex == prologueImages.Length - 1)
@@ -213,6 +219,7 @@ public class PrologueManager : MonoBehaviour
             yield return FadeSpeechBubbles(targetIndex, 1f);
         }
 
+        // Fade buttons back in
         yield return FadeButtons(0f, 1f);
 
         isTransitioning = false;
@@ -250,6 +257,10 @@ public class PrologueManager : MonoBehaviour
         float startAlpha = group.alpha;
         float timer = 0f;
 
+        // Control raycasts based on visibility
+        group.blocksRaycasts = targetAlpha > 0f;
+        group.interactable = targetAlpha > 0f;
+
         while (timer < speechBubbleFadeDuration)
         {
             timer += Time.deltaTime;
@@ -267,8 +278,8 @@ public class PrologueManager : MonoBehaviour
 
         group.alpha = targetAlpha;
 
-        group.interactable = false;
-        group.blocksRaycasts = false;
+        group.interactable = targetAlpha > 0f;
+        group.blocksRaycasts = targetAlpha > 0f;
     }
 
     // LOAD MAIN MENU
