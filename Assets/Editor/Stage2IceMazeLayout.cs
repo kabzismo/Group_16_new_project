@@ -28,27 +28,30 @@ internal static class Stage2IceMazeLayout
     internal static Vector3 MazeKeyCenter => new Vector3(53.1f, Floor + 0.95f, 29.5f);
     internal static Vector3 EnemyHome => Ground(61.6f, 48.2f);
 
-    // Continuous floor route: alternate wide braking turns and tighter slalom lanes.
-    internal static Vector3[] IceWalkRoute
+    // Three cross barriers make the route alternate sides of the courtyard.
+    internal static Vector3[] IceWalkRoute => new[]
     {
-        get
-        {
-            var route = new List<Vector3> { Ground(-8.64f, 30.5f), Ground(-14f, 30.5f), Ground(-17.7f, 33.5f) };
-            for (int lane = 0; lane < 4; lane++)
-            {
-                float z = 39f + lane * 6f;
-                var turns = new[] {
-                    Ground(-17.7f, z), Ground(-14.2f, z - .9f), Ground(-11.8f, z - .9f),
-                    Ground(-10.2f, z + .9f), Ground(-7.8f, z + .9f),
-                    Ground(-6.2f, z - .9f), Ground(-3.8f, z - .9f), Ground(.5f, z)
-                };
-                route.AddRange(lane % 2 == 0 ? turns : turns.Reverse());
-            }
-            route.AddRange(new[] { Ground(-17.7f, 63f), Ground(-12f, 63f), Ground(-7f, 64.5f),
-                Ground(-3f, 66.3f), Ground(1.5f, 66.3f), Ground(2.4f, 67.4f) });
-            return route.ToArray();
-        }
-    }
+        Ground(-8.64f, 30.5f), Ground(-8.64f, 33.6f),
+        Ground(-18.55f, 33.6f), Ground(-18.55f, 42.8f), Ground(-.5f, 42.8f)
+    }.Concat(IceZigzagTurns).Concat(new[]
+    {
+        Ground(-.5f, 63.35f), Ground(-18f, 63.35f), Ground(-18f, 65.75f),
+        Ground(-8.6f, 65.75f), Ground(-8.6f, 68.05f), Ground(-.6f, 68.05f),
+        Ground(1.5f, 66.3f), Ground(2.4f, 67.4f)
+    }).ToArray();
+
+    private static Vector3[] IceZigzagTurns => new[]
+    {
+        Ground(-.5f, 44.5f),
+        Ground(-2f, 47.5f), Ground(-.5f, 50.5f), Ground(-2f, 53.5f),
+        Ground(-.5f, 56.5f), Ground(-2f, 59.5f), Ground(-.5f, 62.5f)
+    };
+
+    internal static Vector3[] IceAlcoveRoute => new[]
+    {
+        Ground(-8.6f, 42.8f), Ground(-8.6f, 44.5f), Ground(-7.5f, 46f), Ground(-7.5f, 49f),
+        Ground(-8.6f, 51.5f), Ground(-15.8f, 51.5f), Ground(-15.8f, 47.9f)
+    };
 
     [MenuItem("Tools/Stage 2/Rebuild High Gravity Maze Walls Only")]
     internal static void RebuildMazeOnly()
@@ -75,7 +78,6 @@ internal static class Stage2IceMazeLayout
         Transform old = root.Find(IceName);
         if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
         BuildIce(Group(IceName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject);
-        MoveKey(Find("Big Key_1"), IceKeyCenter);
         Physics.SyncTransforms();
         EditorSceneManager.MarkSceneDirty(scene);
     }
@@ -184,31 +186,140 @@ internal static class Stage2IceMazeLayout
 
     private static void BuildIce(Transform parent, GameObject crate)
     {
-        // Banks reach the room edge at alternate ends. Their height prevents
-        // bypassing the turns by hopping over them; every required path is flat.
-        for (int i = 0; i < 5; i++)
+        // Low crate masonry preserves the view across the room, as in the
+        // reference. Every wall, pier and ice cap reuses an existing mesh.
+        Material ice = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Ice surface.mat");
+        void Wall(string name, float x1, float z1, float x2, float z2)
         {
-            bool leftGap = i % 2 == 0;
-            float minX = leftGap ? -15.8f : -20f;
-            float maxX = leftGap ? 3f : -1.6f;
-            FittedBox(crate, parent, "Ice Bank " + (i + 1) + (leftGap ? " - Turn Left" : " - Turn Right"),
-                new Vector3((minX + maxX) * .5f, Floor + 1.6f, 36f + i * 6f),
-                new Vector3(maxX - minX, 3.2f, 1f));
+            Vector3 start = new Vector3(x1, 0f, z1);
+            Vector3 finish = new Vector3(x2, 0f, z2);
+            Vector3 center = (start + finish) * .5f;
+            float length = Vector3.Distance(start, finish);
+            float yaw = -Mathf.Atan2(z2 - z1, x2 - x1) * Mathf.Rad2Deg;
+            FittedBox(crate, parent, name, new Vector3(center.x, Floor + .7f, center.z), new Vector3(length + .08f, 1.4f, .55f), yaw);
+            IceCap(crate, parent, name + " - Frozen Top", new Vector3(center.x, Floor + 1.44f, center.z), new Vector3(length + .16f, .08f, .67f), ice, yaw);
         }
-        // Alternating fingers overlap the banks, forcing ground-level steering
-        // around their tips instead of leaving an uninterrupted centre lane.
-        for (int lane = 0; lane < 4; lane++)
+        void Pier(string name, float x, float z)
         {
-            float z = 39f + lane * 6f;
-            FittedBox(crate, parent, "Ice Slalom " + lane + " A", new Vector3(-13f, Floor + 1.6f, z + 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
-            FittedBox(crate, parent, "Ice Slalom " + lane + " B", new Vector3(-9f, Floor + 1.6f, z - 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
-            FittedBox(crate, parent, "Ice Slalom " + lane + " C", new Vector3(-5f, Floor + 1.6f, z + 1.4f), new Vector3(1.2f, 3.2f, 2.8f));
+            FittedBox(crate, parent, name, new Vector3(x, Floor + .77f, z), new Vector3(.85f, 1.54f, .85f));
+            IceCap(crate, parent, name + " - Frozen Top", new Vector3(x, Floor + 1.58f, z), new Vector3(.97f, .08f, .97f), ice);
         }
-        FittedBox(crate, parent, "Ice Entry Island A", new Vector3(-11f, Floor + 1.6f, 32f), new Vector3(2f, 3.2f, 2f));
-        FittedBox(crate, parent, "Ice Entry Island B", new Vector3(-15f, Floor + 1.6f, 34.4f), new Vector3(1.6f, 3.2f, 1.4f));
-        FittedBox(crate, parent, "Ice Exit Island A", new Vector3(-12f, Floor + 1.6f, 65f), new Vector3(1.4f, 3.2f, 2f));
-        FittedBox(crate, parent, "Ice Exit Island B", new Vector3(-3.5f, Floor + 1.6f, 63.3f), new Vector3(1.4f, 3.2f, 2f));
-        FittedBox(crate, parent, "Ice Final Chicane", new Vector3(-7f, Floor + 1.6f, 62.6f), new Vector3(1.2f, 3.2f, 2f));
+
+        // A broad entry opening and two low parapets frame the icy courtyard.
+        Wall("Entry Parapet West", -18.5f, 31.2f, -11.2f, 31.2f);
+        Wall("Entry Parapet East", -6f, 31.2f, 1.5f, 31.2f);
+        Pier("Entry West End", -11.2f, 31.2f);
+        Pier("Entry East End", -6f, 31.2f);
+
+        // Front L-shaped pockets leave the reference's central sliding spine open.
+        Wall("West Front Pocket - Front", -17.1f, 36f, -12.2f, 36f);
+        Wall("West Front Pocket - Return", -12.2f, 36f, -12.2f, 39.4f);
+        Wall("West Front Pocket - Upper Bar", -14.7f, 39.4f, -10.6f, 39.4f);
+        Wall("West Front Pocket - Outer Stub", -17.1f, 36f, -17.1f, 38.1f);
+        Pier("West Front Corner", -12.2f, 36f);
+        Pier("West Front Upper Corner", -10.6f, 39.4f);
+        Wall("East Front Pocket - Front", -6.5f, 36f, .9f, 36f);
+        Wall("East Front Pocket - Return", -6.5f, 36f, -6.5f, 39.1f);
+        Pier("East Front Corner", -6.5f, 36f);
+        Pier("East Front Stop", -6.5f, 39.1f);
+        Pier("Central Stop 01", -8.6f, 38.1f);
+
+        // Left alcove and staggered interior bars reproduce the reference's
+        // recessed pocket and disconnected obstacles between the cross lanes.
+        Wall("West Alcove - Front", -18.4f, 45f, -13.8f, 45f);
+        Wall("West Alcove - Return", -13.8f, 45f, -13.8f, 49.3f);
+        Wall("West Alcove - Outer Stub", -18.4f, 45f, -18.4f, 47.3f);
+        Pier("West Alcove Front Corner", -13.8f, 45f);
+        Wall("Middle West Bar", -13.8f, 48.8f, -10.6f, 48.8f);
+        Pier("Middle West Stop", -10.6f, 48.8f);
+        Wall("Middle East Bar", -6.5f, 46f, -4.1f, 46f);
+        Wall("Middle East Return", -6.5f, 46f, -6.5f, 48.2f);
+        Pier("Middle East Stop", -6.5f, 48.2f);
+        Pier("Central Stop 02", -8.6f, 47.4f);
+
+        Wall("Upper West Pocket - Back", -15.2f, 58.5f, -10.6f, 58.5f);
+        Wall("Upper West Pocket - Return", -10.6f, 55.9f, -10.6f, 58.5f);
+        Wall("Upper West Pocket - Outer Stub", -15.2f, 57f, -15.2f, 58.5f);
+        Pier("Upper West Island A", -14.8f, 54.8f);
+        Pier("Upper West Island B", -12f, 54.8f);
+        Wall("Upper East Bar", -6.5f, 54f, -4.1f, 54f);
+        Pier("Upper East Stop", -6.5f, 55.5f);
+        Pier("Central Stop 03", -8.6f, 56.3f);
+        Wall("Rear West Bar", -16f, 62.2f, -10.6f, 62.2f);
+        Pier("Rear West Corner", -10.6f, 62.2f);
+        Wall("Rear East Bar", -6.5f, 60.8f, -4.1f, 60.8f);
+        Pier("Central Stop 04", -8.6f, 60.8f);
+
+        // Parallel angled banks create the distinctive right-side zigzag lane.
+        Vector3[] turns = IceZigzagTurns;
+        for (int i = 1; i < turns.Length; i++)
+        {
+            Wall("Zigzag Inner " + i, turns[i-1].x - 1.05f, turns[i-1].z, turns[i].x - 1.05f, turns[i].z);
+            Wall("Zigzag Outer " + i, turns[i-1].x + 1.05f, turns[i-1].z, turns[i].x + 1.05f, turns[i].z);
+        }
+        Wall("Zigzag Outer Entry End", .55f, 44.5f, 2.2f, 44.5f);
+        Wall("Zigzag Outer Rear End", .55f, 62.5f, 2.2f, 62.5f);
+
+        // Each barrier reaches the room wall or the zigzag bank. The only
+        // opening in the middle barrier is through the angled sliding lane.
+        Wall("Entry Cross Barrier", -14.9f, 41.3f, 3.6f, 41.3f);
+        Pier("Entry Barrier Stop", -14.9f, 41.3f);
+        Wall("Zigzag Cross Barrier West", -20.4f, 53.5f, -3.05f, 53.5f);
+        Wall("Zigzag Cross Barrier East", -.95f, 53.5f, 3.6f, 53.5f);
+        Wall("Rear Cross Barrier", -14.4f, 64.4f, 3.6f, 64.4f);
+        Pier("Rear Barrier Stop", -14.4f, 64.4f);
+
+        // Shallow walkable steps and a rear terrace echo the raised far end.
+        // The real door and key remain at their existing scene positions.
+        for (int i = 0; i < 4; i++)
+        {
+            float rise = .15f * (i + 1);
+            IceCap(crate, parent, "Rear Stair " + (i + 1), new Vector3(-8.6f, Floor + rise * .5f, 65.5f + i * .75f),
+                new Vector3(3.2f, rise, .8f), ice);
+        }
+        IceCap(crate, parent, "Rear Terrace", new Vector3(-10.2f, Floor + .3f, 68.1f), new Vector3(16.5f, .6f, 2f), ice);
+        for (int i = 0; i < 3; i++)
+        {
+            float rise = .15f * (3 - i);
+            IceCap(crate, parent, "Rear Stair Side Descent " + (i + 1), new Vector3(-1.6f + i * .65f, Floor + rise * .5f, 68.05f),
+                new Vector3(.72f, rise, 1.55f), ice);
+        }
+        Pier("Rear Stair West Pier", -10.6f, 67f);
+        Pier("Rear Stair East Pier", -6.5f, 67f);
+        Wall("Rear Parapet West", -18.4f, 69.1f, -10.6f, 69.1f);
+        Wall("Rear Parapet East", -6.5f, 69.1f, -1.9f, 69.1f);
+        AddReferenceChest(parent);
+    }
+
+    private static void IceCap(GameObject crate, Transform parent, string name, Vector3 center, Vector3 size, Material ice, float yaw = 0f)
+    {
+        FittedBox(crate, parent, name, center, size, yaw);
+        if (ice != null) parent.Find(name).GetComponentInChildren<MeshRenderer>().sharedMaterial = ice;
+    }
+
+    private static void AddReferenceChest(Transform parent)
+    {
+        GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Blender assets/Furniture/Chest.blend");
+        if (source == null) return;
+        Transform anchor = Group("West Alcove - Existing Chest Mesh", parent);
+        GameObject chest = Object.Instantiate(source, anchor);
+        chest.SetActive(true);
+        Undo.RegisterCreatedObjectUndo(chest, "Reuse chest in Ice alcove");
+        foreach (Collider collider in chest.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(collider);
+        foreach (MonoBehaviour behaviour in chest.GetComponentsInChildren<MonoBehaviour>(true)) Object.DestroyImmediate(behaviour);
+        // URP's camera data depends on the Camera and is removed with the behaviours above.
+        foreach (Camera camera in chest.GetComponentsInChildren<Camera>(true)) Object.DestroyImmediate(camera);
+        foreach (Animator animator in chest.GetComponentsInChildren<Animator>(true)) Object.DestroyImmediate(animator);
+        Renderer[] renderers = chest.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
+        chest.transform.position -= bounds.center;
+        Vector3 size = new Vector3(1.4f, .9f, 1f);
+        anchor.localScale = new Vector3(size.x / bounds.size.x, size.y / bounds.size.y, size.z / bounds.size.z);
+        anchor.position = new Vector3(-17f, Floor + .45f, 47.9f);
+        BoxCollider box = anchor.gameObject.AddComponent<BoxCollider>();
+        box.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
     }
 
     private static void BuildMaze(Transform parent, GameObject crate, GameObject shaft, GameObject cap)

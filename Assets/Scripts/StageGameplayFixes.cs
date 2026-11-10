@@ -22,6 +22,8 @@ namespace FPSStarter
             string sceneName = scene.name;
             if (sceneName == "Main Menu" || sceneName == "PauseMenu" || sceneName == "LoadingScene") return;
 
+            if (sceneName == "Stage 2") KeepStage2PlayerView(scene);
+
             Time.timeScale = 1f;
             GameSession.Reset();
             StripPlayerPhysicsConflicts();
@@ -51,6 +53,23 @@ namespace FPSStarter
         private static bool IsStage2(string sceneName)
         {
             return sceneName == "Stage 2" || sceneName == "Level 2 grey scale";
+        }
+
+        private static void KeepStage2PlayerView(Scene scene)
+        {
+            FirstPersonController player = Object.FindFirstObjectByType<FirstPersonController>();
+            if (player == null || player.gameObject.scene != scene) return;
+
+            Camera playerView = player.GetComponentInChildren<Camera>();
+            if (playerView == null || !playerView.enabled) return;
+
+            // Imported room props can contain cameras that draw over the first-person view.
+            foreach (Camera camera in Camera.allCameras)
+            {
+                if (camera != playerView && camera.gameObject.scene == scene &&
+                    camera.targetTexture == null && camera.targetDisplay == playerView.targetDisplay)
+                    camera.enabled = false;
+            }
         }
 
         private static void RemoveIceRoomSmallKey()

@@ -30,38 +30,18 @@ internal static class Stage2ObstacleCourseLayout
         }
     }
 
-    internal const int HotSummitIndex = 19;
+    internal const int HotSummitIndex = 5;
     internal static Landing[] HotRoute => new[]
     {
-        // Alternating hairpins climb in 0.6 m steps. Small landings demand
-        // commitment while the final descent brings the player back to the exit.
-        new Landing(6.4f, 67.1f, .15f, 3.5f, 3f),
-        new Landing(10f, 66f, .75f, 2.3f, 1.9f, false, -20f),
-        new Landing(13.5f, 64.5f, 1.35f, 1.75f, 1.75f, true),
-        new Landing(17f, 66f, 1.95f, 2.2f, 1.8f, false, 25f),
-        new Landing(20.8f, 64f, 2.55f, 1.75f, 1.75f, true),
-        new Landing(20.8f, 60f, 3.15f, 2.2f, 1.8f, false, -25f),
-        new Landing(17.2f, 58.5f, 3.75f, 1.75f, 1.75f, true),
-        new Landing(13.8f, 60f, 4.35f, 2.2f, 1.8f, false, 25f),
-        new Landing(10.2f, 58f, 4.95f, 1.75f, 1.75f, true),
-        new Landing(10.2f, 54f, 5.55f, 2.3f, 1.9f, false, -20f),
-        new Landing(14f, 52.4f, 6.15f, 1.75f, 1.75f, true),
-        new Landing(17.8f, 54f, 6.75f, 2.2f, 1.8f, false, 25f),
-        new Landing(21.2f, 51.5f, 7.35f, 1.75f, 1.75f, true),
-        new Landing(21.2f, 47.5f, 7.95f, 2.3f, 1.9f, false, -20f),
-        new Landing(17.5f, 45.5f, 8.55f, 1.75f, 1.75f, true),
-        new Landing(13.8f, 47f, 9.15f, 2.2f, 1.8f, false, 25f),
-        new Landing(10.2f, 44.8f, 9.75f, 1.75f, 1.75f, true),
-        new Landing(10.2f, 40.8f, 10.35f, 2.3f, 1.9f, false, -20f),
-        new Landing(14f, 38.8f, 10.95f, 1.75f, 1.75f, true),
-        new Landing(17.8f, 37.2f, 11.55f, 2.8f, 2.3f, false, 15f),
-        new Landing(21f, 34f, 10f, 1.9f, 1.9f, true),
-        new Landing(18f, 30.5f, 8f, 2.3f, 1.8f, false, -20f),
-        new Landing(14f, 30f, 6.1f, 1.85f, 1.85f, true),
-        new Landing(10f, 30f, 4.2f, 2.3f, 1.8f, false, 25f),
-        new Landing(14.2f, 33f, 3.1f, 1.85f, 1.85f, true),
-        new Landing(18.5f, 33f, 2f, 2.3f, 1.8f, false, -20f),
-        new Landing(23f, 30f, .65f, 3f, 2.7f)
+        // Long runs fit within the three-second heat limit at the Hot room's
+        // walking speed. A gap between runs gives each crossing a fresh timer.
+        new Landing(11.15f, 67.4f, .25f, 13f, 3.2f),
+        new Landing(20.7f, 62.7f, .9f, 2.8f, 12.2f),
+        new Landing(12.3f, 57.2f, 1.55f, 9.9f, 2.7f),
+        new Landing(8.7f, 48.2f, 2.2f, 2.8f, 11.4f),
+        new Landing(16.7f, 42.7f, 2.85f, 9.6f, 2.8f),
+        new Landing(21.15f, 35.3f, 3.5f, 2.8f, 8f),
+        new Landing(22f, 29.95f, .25f, 6.6f, 5.4f)
     };
 
     internal static Landing[] LowRoute
@@ -190,7 +170,7 @@ internal static class Stage2ObstacleCourseLayout
 
         Undo.IncrementCurrentGroup();
         int undoGroup = Undo.GetCurrentGroup();
-        Undo.SetCurrentGroupName("Elaborate Hot Room obstacle course");
+        Undo.SetCurrentGroupName("Build Hot Room gantries");
         GameObject rootObject = GameObject.Find(RootName);
         Transform root = rootObject != null ? rootObject.transform : CreateGroup(RootName, null);
         Transform previous = root.Find(HotCourseName);
@@ -201,7 +181,7 @@ internal static class Stage2ObstacleCourseLayout
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
         Selection.activeGameObject = root.Find(HotCourseName).gameObject;
-        Debug.Log("Saved the expanded Hot Room: 27 main landings, alternating hairpins, reused industrial props. Low Gravity was not changed. Recovery copy: " + backup);
+        Debug.Log("Saved the Hot Room gantries. Recovery copy: " + backup);
     }
 
     private static void BuildHotCourse(Transform root, GameObject crate, GameObject shaft, GameObject cap, GameObject cannon, GameObject furnace)
@@ -211,23 +191,23 @@ internal static class Stage2ObstacleCourseLayout
         for (int i = 0; i < route.Length; i++)
         {
             string role = i == route.Length - 1 ? " - Exit Landing" : i == HotSummitIndex ? " - Summit Turn" :
-                i > HotSummitIndex ? " - Descending Finale" : route[i].Round ? " - Precision Pillar" : " - Angled Deck";
+                " - Gantry Run";
             Platform(hot, "Hot " + i.ToString("00") + role, route[i], crate, shaft, cap, true);
         }
 
         // Repeated silhouettes establish a furnace-hall rhythm. These are in
         // the gaps outside the required jump corridors, not invisible blockers
         // on landings. Compound props keep exact child-mesh collision.
-        Copy(furnace, hot, "Reused Furnace - Intake", new Vector3(6.3f, Floor + 2.75f, 58f), new Vector3(2.3f, 5.5f, 2.3f), 15f, true, true);
+        Copy(furnace, hot, "Reused Furnace - Intake", new Vector3(5.4f, Floor + 2.75f, 58f), new Vector3(1.8f, 5.5f, 1.8f), 15f, true, true);
         Copy(furnace, hot, "Reused Furnace - Central Stack", new Vector3(23.5f, Floor + 3.2f, 48.6f), new Vector3(2.4f, 6.4f, 2.4f), -15f, true, true);
-        Copy(furnace, hot, "Reused Furnace - Exhaust", new Vector3(6.3f, Floor + 3.5f, 41.6f), new Vector3(2.3f, 7.0f, 2.3f), 15f, true, true);
+        Copy(furnace, hot, "Reused Furnace - Exhaust", new Vector3(5.4f, Floor + 3.5f, 42.8f), new Vector3(1.8f, 7f, 1.8f), 15f, true, true);
         Copy(cannon, hot, "Reused Cannon - Inner Foundry", new Vector3(19.7f, Floor + 1.6f, 49.0f), new Vector3(4.7f, 3.2f, 2.8f), 40f, true, true);
-        Copy(cannon, hot, "Reused Cannon - Summit Base", new Vector3(11.3f, Floor + 1.6f, 40.3f), new Vector3(4.8f, 3.2f, 2.7f), -25f, true, true);
+        Copy(cannon, hot, "Reused Cannon - Summit Base", new Vector3(9.8f, Floor + 1.6f, 37.4f), new Vector3(4.8f, 3.2f, 2.7f), -25f, true, true);
 
         Transform finish = CreateGroup("Exit Frame - Reused Bat and Crate", hot);
-        Copy(shaft, finish, "Left Frame Post", new Vector3(21.3f, Floor + 2.5f, 35.5f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
-        Copy(shaft, finish, "Right Frame Post", new Vector3(24.7f, Floor + 2.5f, 35.5f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
-        Copy(crate, finish, "Overhead Frame Beam", new Vector3(23f, Floor + 4.65f, 35.5f), new Vector3(3.8f, .25f, .3f), 0f, true);
+        Copy(shaft, finish, "Left Frame Post", new Vector3(25.15f, Floor + 2.5f, 28.9f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
+        Copy(shaft, finish, "Right Frame Post", new Vector3(25.15f, Floor + 2.5f, 32.2f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
+        Copy(crate, finish, "Overhead Frame Beam", new Vector3(25.15f, Floor + 4.65f, 30.55f), new Vector3(.3f, .25f, 3.8f), 0f, true);
 
         // The summit pickup makes the climb meaningful; a key beside the low
         // exit would let players bypass the course by hopping across the floor.
