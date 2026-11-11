@@ -15,18 +15,35 @@ internal static class Stage2IceMazeLayout
     internal const string IceName = "Ice Room - Frostbound Switchbacks";
     internal const string MazeName = "High Gravity Room - Looping Crate Maze";
     private const float Floor = Stage2ObstacleCourseLayout.Floor;
-    private const int Columns = 5;
-    private const int Rows = 9;
-    private const float CellWidth = 4.4f;
-    private const float CellDepth = 4.2f;
+    private const int Columns = 10;
+    private const int Rows = 16;
+    private const float CellWidth = 2.2f;
+    private const float CellDepth = 37.8f / Rows;
     private const float MazeMinX = 50.2f;
     private const float MazeMinZ = 28.3f;
-    private const float WallThickness = 0.55f;
-    private const float WallHeight = 2.8f;
+    private const float WallThickness = 0.42f;
+    private const float WallHeight = 1.9f;
+
+    // The reference's staggered turns, traced onto the room's rectangular footprint.
+    // Rows go from the far wall to the entrance. The second array runs along each vertical grid line.
+    private static readonly string[] HorizontalWalls =
+    {
+        "##..######", ".#.#...#..", "..#.#.#..#", "..#.##....", "#..#....#.",
+        ".....#....", "...#...#..", ".#..#.##.#", "..#...#..#", "...##..##.",
+        "#.......#.", ".#..##....", "#.#.##.#.#", ".....#..#.", ".#....#.##",
+        "...#......", "..########"
+    };
+
+    private static readonly string[] VerticalWalls =
+    {
+        "################", "..##...###....#.", "#..###..###..#..", ".#.#..##.#..##..",
+        ".#.###....#..##.", "##..###..#.....#", "#.#.#.##...#.##.", "....##..##.###..",
+        "#.#####...##..#.", ".#.##.#.#...#..#", "################"
+    };
 
     internal static Vector3 IceKeyCenter => new Vector3(1.5f, Floor + 0.95f, 66.3f);
-    internal static Vector3 MazeKeyCenter => new Vector3(53.1f, Floor + 0.95f, 29.5f);
-    internal static Vector3 EnemyHome => Ground(61.6f, 48.2f);
+    internal static Vector3 MazeKeyCenter => CellCenter(Index(9, 0)) + Vector3.up * .87f;
+    internal static Vector3 EnemyHome => CellCenter(Index(5, 8));
 
     // Three cross barriers make the route alternate sides of the courtyard.
     internal static Vector3[] IceWalkRoute => new[]
@@ -62,8 +79,8 @@ internal static class Stage2IceMazeLayout
         Transform root = Find(RootName);
         Transform old = root.Find(MazeName);
         if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
-        BuildMaze(Group(MazeName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject,
-            Find("Objects/Bat/Cylinder.001").gameObject, Find("Objects/Bat/Cylinder.002").gameObject);
+        BuildMaze(Group(MazeName, root), Find("Objects/Level 2 grey box/Cube (29)").gameObject);
+        PlaceMazeActors();
         Physics.SyncTransforms();
         EditorSceneManager.MarkSceneDirty(scene);
     }
@@ -85,9 +102,9 @@ internal static class Stage2IceMazeLayout
     internal static Vector3[] MazeCellCenters => Enumerable.Range(0, Columns * Rows).Select(CellCenter).ToArray();
     internal static Vector3[] MazeEnemyTargets => new[]
     {
-        CellCenter(Index(0, 8)), CellCenter(Index(4, 8)), CellCenter(Index(3, 6)),
-        EnemyHome, CellCenter(Index(0, 4)), CellCenter(Index(4, 3)),
-        CellCenter(Index(2, 1)), CellCenter(Index(0, 0)), CellCenter(Index(1, 0))
+        CellCenter(Index(0, 15)), CellCenter(Index(9, 13)), CellCenter(Index(7, 11)),
+        EnemyHome, CellCenter(Index(0, 4)), CellCenter(Index(8, 3)),
+        CellCenter(Index(2, 1)), CellCenter(Index(9, 0)), CellCenter(Index(3, 0))
     };
 
     internal static Vector3[] MazePlayerRoute
@@ -95,11 +112,9 @@ internal static class Stage2IceMazeLayout
         get
         {
             bool[,] passages = BuildPassages();
-            var route = new List<Vector3> { Ground(49.8f, 67.4f), Ground(52.4f, 67.4f) };
-            route.AddRange(FindPath(passages, Index(0, 8), Index(0, 0)).Select(CellCenter));
-            route.Add(Ground(MazeKeyCenter.x, MazeKeyCenter.z));
-            route.Add(CellCenter(Index(0, 0)));
-            route.AddRange(FindPath(passages, Index(0, 0), Index(1, 0)).Skip(1).Select(CellCenter));
+            var route = new List<Vector3> { Ground(49.8f, 67.4f), Ground(CellCenter(Index(0, 15)).x, 67.4f) };
+            route.AddRange(FindPath(passages, Index(0, 15), Index(9, 0)).Select(CellCenter));
+            route.AddRange(FindPath(passages, Index(9, 0), Index(3, 0)).Skip(1).Select(CellCenter));
             route.Add(Ground(57.3f, 29.6f));
             route.Add(Ground(57.3f, 28.5f));
             return route.ToArray();
@@ -114,11 +129,8 @@ internal static class Stage2IceMazeLayout
             throw new InvalidOperationException("Open Stage 2 outside Play mode before rebuilding Ice and the maze.");
 
         GameObject crate = Find("Objects/Level 2 grey box/Cube (29)").gameObject;
-        GameObject shaft = Find("Objects/Bat/Cylinder.001").gameObject;
-        GameObject cap = Find("Objects/Bat/Cylinder.002").gameObject;
         Transform originalObstacles = Find("Objects/Level 2 grey box");
         Transform iceKey = Find("Big Key_1");
-        Transform highKey = Find("Big Key_4");
         if (crate.GetComponent<MeshFilter>()?.sharedMesh == null)
             throw new InvalidOperationException("The existing crate template has no mesh.");
 
@@ -139,17 +151,9 @@ internal static class Stage2IceMazeLayout
             disabled += DisableOldRoomCrates(Find("Objects/New Level 2 grey box"), false);
             Transform root = Group(RootName, null);
             BuildIce(Group(IceName, root), crate);
-            BuildMaze(Group(MazeName, root), crate, shaft, cap);
+            BuildMaze(Group(MazeName, root), crate);
             MoveKey(iceKey, IceKeyCenter);
-            MoveKey(highKey, MazeKeyCenter);
-
-            Transform enemy = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .FirstOrDefault(transform => transform.name == "High Gravity Chaser");
-            if (enemy != null)
-            {
-                Undo.RecordObject(enemy, "Place enemy on the maze's connected floor");
-                enemy.position = EnemyHome;
-            }
+            PlaceMazeActors();
 
             Physics.SyncTransforms();
             EditorSceneManager.MarkSceneDirty(scene);
@@ -162,6 +166,15 @@ internal static class Stage2IceMazeLayout
             throw;
         }
         finally { Undo.CollapseUndoOperations(undoGroup); }
+    }
+
+    private static void PlaceMazeActors()
+    {
+        MoveKey(Find("Big Key_4"), MazeKeyCenter);
+        Transform enemy = GameObject.Find("High Gravity Chaser")?.transform;
+        if (enemy == null) return;
+        Undo.RecordObject(enemy, "Place enemy in the maze");
+        enemy.position = EnemyHome;
     }
 
     private static int DisableOldRoomCrates(Transform originalObstacles, bool requireCrateAsset = true)
@@ -323,40 +336,116 @@ internal static class Stage2IceMazeLayout
         box.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
     }
 
-    private static void BuildMaze(Transform parent, GameObject crate, GameObject shaft, GameObject cap)
+    private static void BuildMaze(Transform parent, GameObject crate)
     {
-        bool[,] passages = BuildPassages();
-        int wallNumber = 0;
-        for (int boundary = 0; boundary <= Rows; boundary++)
-        {
-            bool[] closed = Enumerable.Range(0, Columns).Select(column =>
-                boundary == 0 ? column != 1 : boundary == Rows ? column != 0 :
-                !passages[Index(column, boundary - 1), Index(column, boundary)]).ToArray();
-            foreach (Vector2Int run in Runs(closed))
-                FittedBox(crate, parent, "Maze Screen " + (wallNumber++).ToString("00"),
-                    new Vector3(MazeMinX + (run.x + run.y * 0.5f) * CellWidth, Floor + WallHeight * 0.5f,
-                        MazeMinZ + boundary * CellDepth), new Vector3(run.y * CellWidth + 0.04f, WallHeight, WallThickness));
-        }
-        for (int boundary = 0; boundary <= Columns; boundary++)
-        {
-            bool[] closed = Enumerable.Range(0, Rows).Select(row => boundary == 0 || boundary == Columns ||
-                !passages[Index(boundary - 1, row), Index(boundary, row)]).ToArray();
-            foreach (Vector2Int run in Runs(closed))
-                FittedBox(crate, parent, "Maze Screen " + (wallNumber++).ToString("00"),
-                    new Vector3(MazeMinX + boundary * CellWidth, Floor + WallHeight * 0.5f,
-                        MazeMinZ + (run.x + run.y * 0.5f) * CellDepth), new Vector3(WallThickness, WallHeight, run.y * CellDepth + 0.04f));
-        }
+        Material concrete = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Concrete material.mat");
+        Material dark = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Dark grey.mat");
+        Vector3 floorCenter = new Vector3(MazeMinX + Columns * CellWidth * .5f, Floor + .008f,
+            MazeMinZ + Rows * CellDepth * .5f);
+        FittedBox(crate, parent, "Dark Maze Floor", floorCenter,
+            new Vector3(Columns * CellWidth, .014f, Rows * CellDepth), material: dark, solid: false);
 
-        // Three off-centre existing-model landmarks distinguish the loops
-        // without filling the clear cell-centre navigation paths.
-        foreach (int cell in new[] { Index(4, 7), Index(0, 3), Index(4, 1) })
+        int wallNumber = 0;
+        float centerY = Floor + WallHeight * .5f;
+        for (int row = 0; row <= Rows; row++)
+            foreach (Vector2Int run in Runs(HorizontalWalls[row].Select(tile => tile == '#').ToArray()))
+                FittedBox(crate, parent, "Maze Wall " + (wallNumber++).ToString("00"),
+                    new Vector3(MazeMinX + (run.x + run.y * .5f) * CellWidth, centerY, MazeMinZ + row * CellDepth),
+                    new Vector3(run.y * CellWidth + WallThickness, WallHeight, WallThickness), material: concrete);
+        for (int column = 0; column <= Columns; column++)
+            foreach (Vector2Int run in Runs(VerticalWalls[column].Select(tile => tile == '#').ToArray()))
+                FittedBox(crate, parent, "Maze Wall " + (wallNumber++).ToString("00"),
+                    new Vector3(MazeMinX + column * CellWidth, centerY, MazeMinZ + (run.x + run.y * .5f) * CellDepth),
+                    new Vector3(WallThickness, WallHeight, run.y * CellDepth + WallThickness), material: concrete);
+
+        const float pillarHeight = 2.6f;
+        var pillars = new List<Vector3>();
+        foreach (int cell in new[] { Index(1, 12), Index(2, 5), Index(4, 1), Index(5, 8), Index(6, 5), Index(8, 3), Index(8, 12) })
         {
-            Vector3 point = CellCenter(cell) + new Vector3(1.25f, 0f, 1.1f);
-            ReusedMesh(shaft, parent, "Maze Landmark - Reused Pillar", new Vector3(point.x, Floor + 1.1f, point.z), new Vector3(0.65f, 2.2f, 0.65f), true);
-            ReusedMesh(cap, parent, "Maze Landmark - Reused Cap", new Vector3(point.x, Floor + 2.3f, point.z), new Vector3(0.85f, 0.2f, 0.85f), true);
+            Vector3 corner = CellCenter(cell) + new Vector3(.8f, 0f, -.85f);
+            corner.y = Floor + pillarHeight * .5f;
+            FittedBox(crate, parent, "Square Signal Pillar", corner, new Vector3(.55f, pillarHeight, .55f), material: dark);
+            pillars.Add(corner + Vector3.up * (pillarHeight * .5f + .018f));
         }
+        BuildMazeMarkings(parent, pillars);
     }
 
+    private static void BuildMazeMarkings(Transform parent, List<Vector3> pillars)
+    {
+        var vertices = new List<Vector3>();
+        var indices = new List<int>();
+        void Quad(Vector3 center, Vector3 right, Vector3 forward)
+        {
+            int start = vertices.Count;
+            vertices.Add(center - right - forward);
+            vertices.Add(center - right + forward);
+            vertices.Add(center + right + forward);
+            vertices.Add(center + right - forward);
+            indices.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
+        }
+        void Ring(Vector3 center, float halfSize, float halfThickness)
+        {
+            float offset = halfSize - halfThickness;
+            foreach (float sign in new[] { -1f, 1f })
+            {
+                Quad(center + Vector3.right * (sign * offset), Vector3.right * halfThickness, Vector3.forward * halfSize);
+                Quad(center + Vector3.forward * (sign * offset), Vector3.right * (offset - halfThickness), Vector3.forward * halfThickness);
+            }
+        }
+
+        // Paint only: the diagonal marks do not alter walking speed or collision.
+        int[] stripedCells =
+        {
+            Index(0, 0), Index(0, 2), Index(2, 1), Index(4, 2), Index(7, 1), Index(9, 2), Index(9, 4),
+            Index(1, 5), Index(3, 5), Index(6, 6), Index(8, 7), Index(0, 8), Index(5, 10), Index(9, 10),
+            Index(1, 12), Index(3, 13), Index(7, 13), Index(9, 14), Index(2, 15), Index(6, 15)
+        };
+        for (int i = 0; i < stripedCells.Length; i++)
+        {
+            Vector3 center = CellCenter(stripedCells[i]);
+            center.y = Floor + .024f;
+            Vector3 direction = i % 3 == 0 ? Vector3.right : Vector3.forward;
+            Vector3 across = new Vector3(direction.z, 0f, -direction.x);
+            for (int stripe = -2; stripe <= 2; stripe++)
+                Quad(center + direction * (stripe * .28f), across * .37f + direction * .19f, direction * .078f);
+        }
+        foreach (Vector3 top in pillars) Ring(top, .25f, .025f);
+        int[] red = indices.ToArray();
+        indices.Clear();
+        Vector3 entrance = CellCenter(Index(0, 15));
+        Vector3 key = CellCenter(Index(9, 0));
+        entrance.y = key.y = Floor + .024f;
+        Ring(entrance, .44f, .033f);
+        Ring(key, .44f, .033f);
+
+        var mesh = new Mesh { name = "High Gravity Maze Markings", subMeshCount = 2 };
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(red, 0);
+        mesh.SetTriangles(indices, 1);
+        mesh.RecalculateNormals();
+        const string assetPath = "Assets/Scenes/Stage 2/High Gravity Maze Markings.asset";
+        Mesh saved = AssetDatabase.LoadAssetAtPath<Mesh>(assetPath);
+        if (saved == null)
+        {
+            AssetDatabase.CreateAsset(mesh, assetPath);
+            saved = mesh;
+        }
+        else
+        {
+            EditorUtility.CopySerialized(mesh, saved);
+            Object.DestroyImmediate(mesh);
+        }
+        var marking = Group(saved.name, parent);
+        marking.gameObject.AddComponent<MeshFilter>().sharedMesh = saved;
+        var renderer = marking.gameObject.AddComponent<MeshRenderer>();
+        renderer.sharedMaterials = new[]
+        {
+            AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Enemy Eyes.mat"),
+            AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Light Grey.mat")
+        };
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        AssetDatabase.SaveAssets();
+    }
     private static IEnumerable<Vector2Int> Runs(bool[] closed)
     {
         int start = -1;
@@ -370,45 +459,18 @@ internal static class Stage2IceMazeLayout
     private static bool[,] BuildPassages()
     {
         int count = Columns * Rows;
-        bool[,] open = new bool[count, count];
-        bool[] visited = new bool[count];
-        var stack = new Stack<int>();
-        // Keep the deterministic route spread across the room; with the three
-        // loops below, the entry-to-key solution visits 23 cells.
-        uint random = 20261027;
-        int Next(int maximum) { random = unchecked(random * 1664525u + 1013904223u); return (int)(random % (uint)maximum); }
-        int first = Index(0, Rows - 1);
-        visited[first] = true;
-        stack.Push(first);
-        while (stack.Count > 0)
-        {
-            int current = stack.Peek();
-            int[] candidates = Neighbours(current).Where(next => !visited[next]).ToArray();
-            if (candidates.Length == 0) { stack.Pop(); continue; }
-            int chosen = candidates[Next(candidates.Length)];
-            open[current, chosen] = open[chosen, current] = true;
-            visited[chosen] = true;
-            stack.Push(chosen);
-        }
-        // Ensure a direct final-key-to-exit link, then create genuine loop
-        // alternatives instead of a single dead-end snake.
-        open[Index(0, 0), Index(1, 0)] = open[Index(1, 0), Index(0, 0)] = true;
-        var closedEdges = new List<Vector2Int>();
-        for (int current = 0; current < count; current++)
-            foreach (int neighbour in Neighbours(current))
-                if (current < neighbour && !open[current, neighbour]) closedEdges.Add(new Vector2Int(current, neighbour));
-        // Keep three alternate loops; the other five shortcut openings become walls.
-        // The spanning tree above still connects every cell, key and exit.
-        for (int i = 0; i < 3 && closedEdges.Count > 0; i++)
-        {
-            int chosen = Next(closedEdges.Count);
-            Vector2Int edge = closedEdges[chosen];
-            closedEdges.RemoveAt(chosen);
-            open[edge.x, edge.y] = open[edge.y, edge.x] = true;
-        }
+        var open = new bool[count, count];
+        for (int row = 0; row < Rows; row++)
+            for (int column = 0; column < Columns; column++)
+            {
+                int cell = Index(column, row);
+                if (column + 1 < Columns && VerticalWalls[column + 1][row] == '.')
+                    open[cell, cell + 1] = open[cell + 1, cell] = true;
+                if (row + 1 < Rows && HorizontalWalls[row + 1][column] == '.')
+                    open[cell, cell + Columns] = open[cell + Columns, cell] = true;
+            }
         return open;
     }
-
     private static IEnumerable<int> Neighbours(int cell)
     {
         int column = cell % Columns;
@@ -456,49 +518,21 @@ internal static class Stage2IceMazeLayout
         return group.transform;
     }
 
-    private static void FittedBox(GameObject source, Transform parent, string name, Vector3 center, Vector3 size, float yaw = 0f)
+    private static void FittedBox(GameObject source, Transform parent, string name, Vector3 center, Vector3 size, float yaw = 0f,
+        Material material = null, bool solid = true)
     {
         Transform anchor = Group(name, parent);
         Mesh mesh = source.GetComponent<MeshFilter>().sharedMesh;
         MeshRenderer sourceRenderer = source.GetComponent<MeshRenderer>();
         Transform visual = Group("Reused Crate Mesh", anchor);
         visual.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
-        visual.gameObject.AddComponent<MeshRenderer>().sharedMaterials = sourceRenderer.sharedMaterials;
+        visual.gameObject.AddComponent<MeshRenderer>().sharedMaterials = material != null
+            ? Enumerable.Repeat(material, mesh.subMeshCount).ToArray() : sourceRenderer.sharedMaterials;
         Vector3 scale = new Vector3(size.x / mesh.bounds.size.x, size.y / mesh.bounds.size.y, size.z / mesh.bounds.size.z);
         visual.localScale = scale;
         visual.localPosition = -Vector3.Scale(mesh.bounds.center, scale);
-        BoxCollider collider = anchor.gameObject.AddComponent<BoxCollider>();
-        collider.size = size;
+        if (solid) anchor.gameObject.AddComponent<BoxCollider>().size = size;
         anchor.SetPositionAndRotation(center, Quaternion.Euler(0f, yaw, 0f));
-    }
-
-    private static void ReusedMesh(GameObject source, Transform parent, string name, Vector3 center, Vector3 size, bool solid)
-    {
-        Transform anchor = Group(name, parent);
-        GameObject clone = Object.Instantiate(source);
-        clone.name = name + " Mesh";
-        clone.SetActive(true);
-        clone.transform.SetParent(anchor, true);
-        Undo.RegisterCreatedObjectUndo(clone, "Reuse existing pillar mesh");
-        foreach (Collider collider in clone.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(collider);
-        foreach (Rigidbody body in clone.GetComponentsInChildren<Rigidbody>(true)) Object.DestroyImmediate(body);
-        foreach (MonoBehaviour behaviour in clone.GetComponentsInChildren<MonoBehaviour>(true)) Object.DestroyImmediate(behaviour);
-        foreach (Animator animator in clone.GetComponentsInChildren<Animator>(true)) Object.DestroyImmediate(animator);
-        Renderer[] renderers = clone.GetComponentsInChildren<Renderer>().Where(renderer => renderer.bounds.size.sqrMagnitude > 0.0001f).ToArray();
-        if (renderers.Length == 0) throw new InvalidOperationException("Existing pillar template has no visible renderer: " + source.name);
-        Bounds bounds = renderers[0].bounds;
-        foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
-        clone.transform.position -= bounds.center;
-        if (solid)
-            foreach (MeshFilter mesh in clone.GetComponentsInChildren<MeshFilter>())
-            {
-                if (mesh.sharedMesh == null) continue;
-                MeshCollider collider = mesh.gameObject.AddComponent<MeshCollider>();
-                collider.sharedMesh = mesh.sharedMesh;
-                collider.convex = false;
-            }
-        anchor.localScale = new Vector3(size.x / bounds.size.x, size.y / bounds.size.y, size.z / bounds.size.z);
-        anchor.position = center;
     }
 
     private static void MoveKey(Transform key, Vector3 center)

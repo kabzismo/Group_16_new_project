@@ -15,7 +15,7 @@ namespace FPSStarter
         [SerializeField] private Transform catchRespawnPoint;
         public void ConfigureCatchCheckpoint(Transform checkpoint) => catchRespawnPoint = checkpoint;
         [Tooltip("Fraction of the player's normal, uncrouched walking speed.")]
-        [SerializeField, Range(0.01f, 1f)] private float walkSpeedMultiplier = 0.35f;
+        [SerializeField, Range(0.01f, 1f)] private float walkSpeedMultiplier = 0.85f;
         [SerializeField, Min(0.1f)] private float catchDistance = 0.8f;
         [SerializeField] private Color bodyColor = new Color(0.24f, 0.08f, 0.11f);
         [SerializeField] private Color eyeColor = new Color(1f, 0.18f, 0.06f);
