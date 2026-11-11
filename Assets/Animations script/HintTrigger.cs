@@ -1,12 +1,14 @@
-using Unity.VisualScripting;
+using FPSStarter;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class HintTrigger : MonoBehaviour
 {
     public Hint hint;
     [Tooltip("Room introduced by this entrance hint. Completed only after its final line.")]
-    public FPSStarter.RoomMechanicVolume entranceRoom;
+    public RoomMechanicVolume entranceRoom;
 
     [TextArea]
     public string[] hintLines;
@@ -22,13 +24,23 @@ public class HintTrigger : MonoBehaviour
 
     private bool playerInRange;
     private bool used;
-    private FPSStarter.PlayerInteractor interactor;
+    private PlayerInteractor interactor;
+    private Image promptBackground;
+    private TextMeshProUGUI promptText;
+    private RoomMechanic Room => entranceRoom != null ? entranceRoom.Mechanic : RoomMechanic.None;
 
     void Start()
     {
-        interactor = FindFirstObjectByType<FPSStarter.PlayerInteractor>();
+        interactor = FindFirstObjectByType<PlayerInteractor>();
         if (promptUI != null)
+        {
+            if (gameObject.scene.name == "Stage 2")
+            {
+                promptBackground = promptUI.GetComponent<Image>();
+                promptText = promptUI.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
             promptUI.SetActive(false);
+        }
 
         if (hintIcon != null)
             hintIcon.SetActive(false);
@@ -42,9 +54,9 @@ public class HintTrigger : MonoBehaviour
         if (!playerInRange || !isUnlocked || used || Hint.IsReading)
             return;
 
-        bool keyInteraction = interactor != null && interactor.HasPriorityInteraction;
-        if (promptUI != null) promptUI.SetActive(!keyInteraction);
-        if (keyInteraction) return;
+        bool priorityInteraction = interactor != null && interactor.HasPriorityInteraction;
+        SetPromptVisible(!priorityInteraction);
+        if (priorityInteraction) return;
 
         if (Keyboard.current != null &&
             Keyboard.current[interactKey].wasPressedThisFrame)
@@ -77,6 +89,22 @@ public class HintTrigger : MonoBehaviour
             spawnParticles.SetActive(false);
     }
 
+    private void SetPromptVisible(bool visible)
+    {
+        if (promptUI == null) return;
+        if (visible && !promptUI.activeSelf && promptText != null)
+        {
+            Stage2PromptTheme theme = Stage2PromptTheme.For(Room);
+            if (promptBackground != null) promptBackground.color = theme.Background;
+            if (promptUI.transform is RectTransform panel) panel.sizeDelta = new Vector2(258f, 38f);
+            promptText.color = theme.Accent;
+            promptText.fontSize = 16f;
+            promptText.fontStyle = FontStyles.Bold;
+            promptText.text = $"[{interactKey}] Speak to the Conductor";
+        }
+        promptUI.SetActive(visible);
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player"))
@@ -92,8 +120,7 @@ public class HintTrigger : MonoBehaviour
             if (spawnParticles != null)
                 spawnParticles.SetActive(true);
 
-            if (promptUI != null)
-                promptUI.SetActive(true);
+            SetPromptVisible(!Hint.IsReading && (interactor == null || !interactor.HasPriorityInteraction));
         }
     }
 

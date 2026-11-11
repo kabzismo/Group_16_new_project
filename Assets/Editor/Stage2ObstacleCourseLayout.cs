@@ -36,11 +36,11 @@ internal static class Stage2ObstacleCourseLayout
         // Long runs fit within the three-second heat limit at the Hot room's
         // walking speed. A gap between runs gives each crossing a fresh timer.
         new Landing(11.15f, 67.4f, .25f, 13f, 3.2f),
-        new Landing(20.7f, 62.7f, .9f, 2.8f, 12.2f),
-        new Landing(12.3f, 57.2f, 1.55f, 9.9f, 2.7f),
-        new Landing(8.7f, 48.2f, 2.2f, 2.8f, 11.4f),
-        new Landing(16.7f, 42.7f, 2.85f, 9.6f, 2.8f),
-        new Landing(21.15f, 35.3f, 3.5f, 2.8f, 8f),
+        new Landing(20.7f, 62.7f, 1.25f, 2.8f, 12.2f),
+        new Landing(12.3f, 57.2f, 2.25f, 9.9f, 2.7f),
+        new Landing(8f, 48.2f, 3.25f, 2.8f, 11.4f),
+        new Landing(16.7f, 42.7f, 4.25f, 9.6f, 2.8f),
+        new Landing(21.15f, 33.1f, 5.85f, 2.8f, 6.4f),
         new Landing(22f, 29.95f, .25f, 6.6f, 5.4f)
     };
 
@@ -188,12 +188,36 @@ internal static class Stage2ObstacleCourseLayout
     {
         Transform hot = CreateGroup(HotCourseName, root);
         Landing[] route = HotRoute;
+        const int crosswalkIndex = 2;
+        Material rust = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Rust.mat");
+        RoomMechanicVolume room = FindRoom(RoomMechanic.Hot);
         for (int i = 0; i < route.Length; i++)
         {
             string role = i == route.Length - 1 ? " - Exit Landing" : i == HotSummitIndex ? " - Summit Turn" :
                 " - Gantry Run";
-            Platform(hot, "Hot " + i.ToString("00") + role, route[i], crate, shaft, cap, true);
+            bool isCrosswalk = i == crosswalkIndex;
+            Transform deck = Platform(hot, "Hot " + i.ToString("00") + role, route[i], crate, shaft, cap, true);
+            if (!isCrosswalk) continue;
+
+            // The baffle falls with the deck. Waiting at the bend costs the crossing.
+            AddHotBaffle(deck, crate, route[i], "Crosswalk", .2f, -1, true);
+            var timed = Undo.AddComponent<TimedGravityPlatform>(deck.gameObject);
+            timed.room = room;
+            timed.secondsToCollapse = 1.5f;
+            timed.secondsToRestore = 3.8f;
         }
+
+        // Alternating openings make the long runs demand steering under the heat timer.
+        // The walls are taller than a jump, with a 1.35 m lane past each end.
+        AddHotBaffle(hot, crate, route[0], "Intake Left", -1.7f, -1, true);
+        AddHotBaffle(hot, crate, route[0], "Intake Right", 2.5f, 1, true);
+        AddHotBaffle(hot, crate, route[1], "Furnace East", 1.45f, 1, false);
+        AddHotBaffle(hot, crate, route[1], "Furnace West", -2.2f, -1, false);
+        AddHotBaffle(hot, crate, route[3], "Exhaust West", 1.15f, -1, false);
+        AddHotBaffle(hot, crate, route[3], "Exhaust East", -2.75f, 1, false);
+        AddHotBaffle(hot, crate, route[4], "Summit Approach", 0f, 1, true);
+
+        AddHotCrossings(hot, crate, route[3], (route[4].Top.y + route[HotSummitIndex].Top.y) * .5f, room);
 
         // Repeated silhouettes establish a furnace-hall rhythm. These are in
         // the gaps outside the required jump corridors, not invisible blockers
@@ -208,10 +232,48 @@ internal static class Stage2ObstacleCourseLayout
         Copy(shaft, finish, "Left Frame Post", new Vector3(25.15f, Floor + 2.5f, 28.9f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
         Copy(shaft, finish, "Right Frame Post", new Vector3(25.15f, Floor + 2.5f, 32.2f), new Vector3(.28f, 3.7f, .28f), 0f, true, true);
         Copy(crate, finish, "Overhead Frame Beam", new Vector3(25.15f, Floor + 4.65f, 30.55f), new Vector3(.3f, .25f, 3.8f), 0f, true);
+        Stage2HotRoomFinish.Apply(hot, rust);
 
         // The summit pickup makes the climb meaningful; a key beside the low
         // exit would let players bypass the course by hopping across the floor.
         MoveKey(Find("Big Key_2"), route[HotSummitIndex].Top + Vector3.up * 0.75f);
+    }
+
+    private static void AddHotCrossings(Transform hot, GameObject crate, Landing exhaust, float shuttleTop,
+        RoomMechanicVolume room)
+    {
+        float x = exhaust.Top.x;
+        float y = exhaust.Top.y;
+        const float ductZ = 46.75f;
+        const float headroom = 1.9f;
+        Copy(crate, hot, "Exhaust Duct - Low Lintel", new Vector3(x, y + headroom + .21f, ductZ),
+            new Vector3(3.6f, .42f, 1.4f), 0f, true);
+        Copy(crate, hot, "Exhaust Duct - West Post", new Vector3(x - 1.61f, y + headroom * .5f, ductZ),
+            new Vector3(.34f, headroom, 1.4f), 0f, true);
+        Copy(crate, hot, "Exhaust Duct - East Post", new Vector3(x + 1.61f, y + headroom * .5f, ductZ),
+            new Vector3(.34f, headroom, 1.4f), 0f, true);
+
+        // The summit sits beyond a single jump. This shuttle moves between the two long decks.
+        Transform shuttle = Copy(crate, hot, "Summit Shuttle", new Vector3(20.75f, shuttleTop - .22f, 38.8f),
+            new Vector3(1.8f, .44f, 1.65f), 0f, true);
+        var moving = Undo.AddComponent<MovingGravityPlatform>(shuttle.gameObject);
+        moving.room = room;
+        moving.travel = new Vector3(0f, 0f, 1f);
+        moving.period = 3.4f;
+    }
+
+    private static void AddHotBaffle(Transform course, GameObject crate, Landing deck, string name,
+        float alongDeck, int blockedSide, bool alongX)
+    {
+        const float opening = 1.35f;
+        const float height = 2.35f;
+        const float thickness = .7f;
+        float width = (alongX ? deck.Size.y : deck.Size.x) - opening;
+        float acrossDeck = blockedSide * opening * .5f;
+        Vector3 center = deck.Top + new Vector3(alongX ? alongDeck : acrossDeck, height * .5f,
+            alongX ? acrossDeck : alongDeck);
+        Vector3 size = new Vector3(alongX ? thickness : width, height, alongX ? width : thickness);
+        Copy(crate, course, "Gantry Baffle - " + name, center, size, 0f, true);
     }
 
     [MenuItem("Tools/Stage 2/Rebuild Low Gravity Course Only")]
@@ -249,7 +311,8 @@ internal static class Stage2ObstacleCourseLayout
         MoveKey(Find("Big Key_3"), route[route.Length - 1].Top + Vector3.up * 0.75f);
     }
 
-    private static void Platform(Transform parent, string name, Landing landing, GameObject crate, GameObject shaft, GameObject cap, bool supported, bool groundedPillar = false)
+    private static Transform Platform(Transform parent, string name, Landing landing, GameObject crate, GameObject shaft, GameObject cap,
+        bool supported, bool groundedPillar = false)
     {
         Transform group = CreateGroup(name, parent);
         float height = supported ? Mathf.Max(0.15f, landing.Top.y - Floor) : 0.55f;
@@ -257,12 +320,13 @@ internal static class Stage2ObstacleCourseLayout
         {
             Copy(crate, group, "Crate Platform", landing.Top - Vector3.up * height * 0.5f,
                 new Vector3(landing.Size.x, height, landing.Size.y), landing.Yaw, true);
-            return;
+            return group;
         }
         Copy(cap, group, "Round Landing", landing.Top - Vector3.up * 0.15f, new Vector3(landing.Size.x, 0.3f, landing.Size.y), 0f, true, true);
         float stemHeight = supported || groundedPillar ? Mathf.Max(0.2f, landing.Top.y - Floor - 0.3f) : 1.6f;
         Copy(shaft, group, "Pillar", landing.Top - Vector3.up * (0.3f + stemHeight * 0.5f),
             new Vector3(landing.Size.x * 0.7f, stemHeight, landing.Size.y * 0.7f), 0f, true, true);
+        return group;
     }
 
     private static Transform CreateGroup(string name, Transform parent)
@@ -273,7 +337,8 @@ internal static class Stage2ObstacleCourseLayout
         return obj.transform;
     }
 
-    private static void Copy(GameObject source, Transform parent, string name, Vector3 center, Vector3 size, float yaw, bool solid, bool exactCollider = false)
+    private static Transform Copy(GameObject source, Transform parent, string name, Vector3 center, Vector3 size, float yaw,
+        bool solid, bool exactCollider = false)
     {
         Transform anchor = CreateGroup(name, parent);
         GameObject clone = Object.Instantiate(source);
@@ -305,6 +370,7 @@ internal static class Stage2ObstacleCourseLayout
         }
         anchor.localScale = new Vector3(size.x / bounds.size.x, size.y / bounds.size.y, size.z / bounds.size.z);
         anchor.SetPositionAndRotation(center, Quaternion.Euler(0f, yaw, 0f));
+        return anchor;
     }
 
     /// <summary>Keep the saved layout while removing invisible boxes around hollow/compound props.</summary>

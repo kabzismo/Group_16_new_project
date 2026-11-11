@@ -308,6 +308,7 @@ namespace FPSStarter
                 if (key.IsStage2Key) availableKeys.Add(key);
             }
             availableKeys.Sort((left, right) => string.CompareOrdinal(left.name, right.name));
+            PlayerInteractor interactor = Object.FindFirstObjectByType<PlayerInteractor>();
 
             for (int index = 0; index < roomOrder.Length; index++)
             {
@@ -317,9 +318,11 @@ namespace FPSStarter
                 CarryableObject roomKey = availableKeys.Find(key => key.name == "Big Key_" + (index + 1)) ??
                     availableKeys.Find(key => key.ItemId == keyId);
                 if (roomKey != null) roomKey.SetItemId(keyId);
+                if (roomOrder[index] == RoomMechanic.HighGravity && interactor != null)
+                    interactor.SetAssistedKey(roomKey);
                 // Key identities must not shift if an exit door is missing.
                 DoorOutward door = FindDoor(doorNames[index], importedStage2);
-                if (door != null) door.RequireKey(keyId);
+                if (door != null) door.RequireKey(keyId, roomOrder[index]);
             }
         }
 
