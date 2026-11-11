@@ -18,6 +18,14 @@ namespace FPSStarter
         public string ItemName => itemName;
         public string ItemId => itemId;
         public bool IsStage2Key => itemId == "key" || itemId.StartsWith("stage2-key-");
+        internal RoomMechanic KeyRoom => itemId switch
+        {
+            "stage2-key-ice" => RoomMechanic.Ice,
+            "stage2-key-hot" => RoomMechanic.Hot,
+            "stage2-key-lowgravity" => RoomMechanic.LowGravity,
+            "stage2-key-highgravity" => RoomMechanic.HighGravity,
+            _ => RoomMechanic.None
+        };
 
         private void Awake()
         {

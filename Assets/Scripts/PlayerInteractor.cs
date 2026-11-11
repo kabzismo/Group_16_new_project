@@ -13,7 +13,13 @@ namespace FPSStarter
         [SerializeField, Min(0.001f)] private float holdDistanceSensitivity = 0.01f;
 
         public string CurrentPrompt { get; private set; }
+        internal bool HasThemedPrompt { get; private set; }
+        internal RoomMechanic PromptRoom { get; private set; }
+        private FirstPersonController controller;
         private CarryableObject heldObject;
+        private CarryableObject assistedKey;
+        private BoxCollider assistedKeyTarget;
+        private bool stage2;
         private int priorityInteractionFrame = -1;
 
         // Hints also listen for E. Resolve the current ray directly so the
@@ -24,22 +30,33 @@ namespace FPSStarter
             {
                 if (priorityInteractionFrame == Time.frameCount) return true;
                 if (!isActiveAndEnabled || playerCamera == null || heldObject != null) return false;
-                if (!Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit,
-                    interactionDistance, interactionMask, QueryTriggerInteraction.Ignore)) return false;
-                CarryableObject key = hit.collider.GetComponentInParent<CarryableObject>();
-                return key != null && key.IsStage2Key || hit.collider.GetComponentInParent<Stage2ExitInteractable>() != null;
+                Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+                Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactionMask, QueryTriggerInteraction.Ignore);
+                CarryableObject key = ResolvePickup(ray, hit.collider);
+                return key != null && key.IsStage2Key || hit.collider != null &&
+                    (hit.collider.GetComponentInParent<Stage2ExitInteractable>() != null ||
+                     stage2 && hit.collider.GetComponentInParent<DoorOutward>() != null);
             }
         }
 
         private void Awake()
         {
+            controller = GetComponent<FirstPersonController>();
+            stage2 = gameObject.scene.name == "Stage 2";
             if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>(true);
             if (playerCamera == null) playerCamera = Camera.main;
+        }
+
+        internal void SetAssistedKey(CarryableObject key)
+        {
+            assistedKey = key;
+            assistedKeyTarget = key != null ? key.GetComponent<BoxCollider>() : null;
         }
 
         private void Update()
         {
             CurrentPrompt = string.Empty;
+            HasThemedPrompt = false;
             if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>(true);
             if (playerCamera == null) playerCamera = Camera.main;
             if (playerCamera == null) return;
@@ -65,11 +82,16 @@ namespace FPSStarter
                 return;
             }
 
-            if (!hitSomething) return;
-            CarryableObject carryable = hit.collider.GetComponentInParent<CarryableObject>();
-            if (carryable != null && !carryable.IsHeld && !carryable.IsPlaced)
+            CarryableObject carryable = ResolvePickup(ray, hit.collider);
+            if (carryable != null)
             {
                 CurrentPrompt = "[E] Pick up " + carryable.ItemName;
+                if (stage2 && carryable.KeyRoom != RoomMechanic.None)
+                {
+                    CurrentPrompt = "[E] Pick up key";
+                    RoomMechanic currentRoom = controller != null ? controller.CurrentMechanic : RoomMechanic.None;
+                    SetPromptRoom(currentRoom != RoomMechanic.None ? currentRoom : carryable.KeyRoom);
+                }
                 if (interactPressed)
                 {
                     // Stage 2 keys are collectibles, not physics objects the player
@@ -86,21 +108,55 @@ namespace FPSStarter
                         }
                     }
 
-                    FirstPersonController controller = GetComponent<FirstPersonController>();
                     carryable.PickUp(controller != null ? controller.HoldPoint : transform);
                     heldObject = carryable;
                 }
                 return;
             }
 
+            if (!hitSomething) return;
             IInteractable interactable = FindInteractable(hit.collider);
             if (interactable == null) return;
             CurrentPrompt = interactable.Prompt;
+            bool isExit = interactable is Stage2ExitInteractable;
+            bool isDoor = stage2 && interactable is DoorOutward;
+            if (isDoor)
+            {
+                RoomMechanic room = ((DoorOutward)interactable).PromptRoom;
+                SetPromptRoom(room != RoomMechanic.None || controller == null ? room : controller.CurrentMechanic);
+            }
+            else if (stage2 && isExit) SetPromptRoom(RoomMechanic.None);
             if (interactPressed)
             {
-                if (interactable is Stage2ExitInteractable) priorityInteractionFrame = Time.frameCount;
+                if (isExit || isDoor) priorityInteractionFrame = Time.frameCount;
                 interactable.Interact(gameObject);
             }
+        }
+
+        private void SetPromptRoom(RoomMechanic room)
+        {
+            HasThemedPrompt = true;
+            PromptRoom = room;
+        }
+
+        private CarryableObject ResolvePickup(Ray ray, Collider directHit)
+        {
+            CarryableObject directKey = directHit != null ? directHit.GetComponentInParent<CarryableObject>() : null;
+            if (directKey != null && !directKey.IsHeld && !directKey.IsPlaced) return directKey;
+            if (assistedKey == null || assistedKeyTarget == null || !assistedKeyTarget.enabled ||
+                !assistedKey.isActiveAndEnabled || assistedKey.IsHeld || assistedKey.IsPlaced) return null;
+
+            const float aimTolerance = .8f;
+            Vector3 towardKey = assistedKeyTarget.bounds.center - ray.origin;
+            float alongRay = Vector3.Dot(towardKey, ray.direction);
+            if (alongRay <= 0f || towardKey.sqrMagnitude > interactionDistance * interactionDistance ||
+                (towardKey - ray.direction * alongRay).sqrMagnitude > aimTolerance * aimTolerance) return null;
+
+            // Give a directly aimed interaction priority, and never reach the key through a maze wall.
+            if (directHit != null && FindInteractable(directHit) != null) return null;
+            return Physics.Linecast(ray.origin, ray.origin + towardKey, out RaycastHit hit,
+                interactionMask, QueryTriggerInteraction.Ignore) &&
+                hit.collider.GetComponentInParent<CarryableObject>() == assistedKey ? assistedKey : null;
         }
 
         private void OnDisable() => CurrentPrompt = string.Empty;

@@ -15,6 +15,7 @@ public class DoorOutward : MonoBehaviour, IInteractable
     private Quaternion closedRotation;
     private Quaternion openRotation;
     private string requiredKeyId;
+    internal RoomMechanic PromptRoom { get; private set; }
 
     public string Prompt
     {
@@ -57,9 +58,10 @@ public class DoorOutward : MonoBehaviour, IInteractable
 
     public void Interact(GameObject interactor) => Toggle();
 
-    public void RequireKey(string keyId)
+    public void RequireKey(string keyId, RoomMechanic room = RoomMechanic.None)
     {
         requiredKeyId = keyId;
+        PromptRoom = room;
     }
 
     private void Toggle()

@@ -186,8 +186,8 @@ internal static class Stage2IceMazeLayout
 
     private static void BuildIce(Transform parent, GameObject crate)
     {
-        // Low crate masonry preserves the view across the room, as in the
-        // reference. Every wall, pier and ice cap reuses an existing mesh.
+        // Raise the masonry above eye level without narrowing the sliding lanes.
+        const float wallHeight = 2.55f;
         Material ice = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Ice surface.mat");
         void Wall(string name, float x1, float z1, float x2, float z2)
         {
@@ -196,16 +196,17 @@ internal static class Stage2IceMazeLayout
             Vector3 center = (start + finish) * .5f;
             float length = Vector3.Distance(start, finish);
             float yaw = -Mathf.Atan2(z2 - z1, x2 - x1) * Mathf.Rad2Deg;
-            FittedBox(crate, parent, name, new Vector3(center.x, Floor + .7f, center.z), new Vector3(length + .08f, 1.4f, .55f), yaw);
-            IceCap(crate, parent, name + " - Frozen Top", new Vector3(center.x, Floor + 1.44f, center.z), new Vector3(length + .16f, .08f, .67f), ice, yaw);
+            FittedBox(crate, parent, name, new Vector3(center.x, Floor + wallHeight * .5f, center.z), new Vector3(length + .08f, wallHeight, .55f), yaw);
+            IceCap(crate, parent, name + " - Frozen Top", new Vector3(center.x, Floor + wallHeight + .04f, center.z), new Vector3(length + .16f, .08f, .67f), ice, yaw);
         }
-        void Pier(string name, float x, float z)
+        void Pier(string name, float x, float z, bool standalone = false)
         {
-            FittedBox(crate, parent, name, new Vector3(x, Floor + .77f, z), new Vector3(.85f, 1.54f, .85f));
-            IceCap(crate, parent, name + " - Frozen Top", new Vector3(x, Floor + 1.58f, z), new Vector3(.97f, .08f, .97f), ice);
+            float height = standalone ? 1.54f : wallHeight + .14f;
+            FittedBox(crate, parent, name, new Vector3(x, Floor + height * .5f, z), new Vector3(.85f, height, .85f));
+            IceCap(crate, parent, name + " - Frozen Top", new Vector3(x, Floor + height + .04f, z), new Vector3(.97f, .08f, .97f), ice);
         }
 
-        // A broad entry opening and two low parapets frame the icy courtyard.
+        // A broad entry opening and two parapets frame the icy courtyard.
         Wall("Entry Parapet West", -18.5f, 31.2f, -11.2f, 31.2f);
         Wall("Entry Parapet East", -6f, 31.2f, 1.5f, 31.2f);
         Pier("Entry West End", -11.2f, 31.2f);
@@ -222,7 +223,7 @@ internal static class Stage2IceMazeLayout
         Wall("East Front Pocket - Return", -6.5f, 36f, -6.5f, 39.1f);
         Pier("East Front Corner", -6.5f, 36f);
         Pier("East Front Stop", -6.5f, 39.1f);
-        Pier("Central Stop 01", -8.6f, 38.1f);
+        Pier("Central Stop 01", -8.6f, 38.1f, standalone: true);
 
         // Left alcove and staggered interior bars reproduce the reference's
         // recessed pocket and disconnected obstacles between the cross lanes.
@@ -235,20 +236,20 @@ internal static class Stage2IceMazeLayout
         Wall("Middle East Bar", -6.5f, 46f, -4.1f, 46f);
         Wall("Middle East Return", -6.5f, 46f, -6.5f, 48.2f);
         Pier("Middle East Stop", -6.5f, 48.2f);
-        Pier("Central Stop 02", -8.6f, 47.4f);
+        Pier("Central Stop 02", -8.6f, 47.4f, standalone: true);
 
         Wall("Upper West Pocket - Back", -15.2f, 58.5f, -10.6f, 58.5f);
         Wall("Upper West Pocket - Return", -10.6f, 55.9f, -10.6f, 58.5f);
         Wall("Upper West Pocket - Outer Stub", -15.2f, 57f, -15.2f, 58.5f);
-        Pier("Upper West Island A", -14.8f, 54.8f);
-        Pier("Upper West Island B", -12f, 54.8f);
+        Pier("Upper West Island A", -14.8f, 54.8f, standalone: true);
+        Pier("Upper West Island B", -12f, 54.8f, standalone: true);
         Wall("Upper East Bar", -6.5f, 54f, -4.1f, 54f);
-        Pier("Upper East Stop", -6.5f, 55.5f);
-        Pier("Central Stop 03", -8.6f, 56.3f);
+        Pier("Upper East Stop", -6.5f, 55.5f, standalone: true);
+        Pier("Central Stop 03", -8.6f, 56.3f, standalone: true);
         Wall("Rear West Bar", -16f, 62.2f, -10.6f, 62.2f);
         Pier("Rear West Corner", -10.6f, 62.2f);
         Wall("Rear East Bar", -6.5f, 60.8f, -4.1f, 60.8f);
-        Pier("Central Stop 04", -8.6f, 60.8f);
+        Pier("Central Stop 04", -8.6f, 60.8f, standalone: true);
 
         // Parallel angled banks create the distinctive right-side zigzag lane.
         Vector3[] turns = IceZigzagTurns;
@@ -284,8 +285,8 @@ internal static class Stage2IceMazeLayout
             IceCap(crate, parent, "Rear Stair Side Descent " + (i + 1), new Vector3(-1.6f + i * .65f, Floor + rise * .5f, 68.05f),
                 new Vector3(.72f, rise, 1.55f), ice);
         }
-        Pier("Rear Stair West Pier", -10.6f, 67f);
-        Pier("Rear Stair East Pier", -6.5f, 67f);
+        Pier("Rear Stair West Pier", -10.6f, 67f, standalone: true);
+        Pier("Rear Stair East Pier", -6.5f, 67f, standalone: true);
         Wall("Rear Parapet West", -18.4f, 69.1f, -10.6f, 69.1f);
         Wall("Rear Parapet East", -6.5f, 69.1f, -1.9f, 69.1f);
         AddReferenceChest(parent);
