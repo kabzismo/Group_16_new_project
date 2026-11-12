@@ -62,6 +62,13 @@ namespace FPSStarter
         public RoomMechanic CurrentMechanic => currentMechanic;
         public RoomMechanicVolume CurrentRoom => activeRoomVolume;
         private bool isWalking = false;
+       
+        [Header("Footstep Sounds")]
+        [SerializeField] private AudioSource footstepAudio;
+        [SerializeField] private float footstepInterval = 0.45f;
+        private AudioSource footstepLoopSource;
+        private float footstepLoopTime;
+        private float footstepTimer;
 
         /// <summary>Applies the Stage 2 movement tuning after the scene has loaded.</summary>
         public void ConfigureStage2Movement(float iceSpeed, float iceAccelerationRate, float iceDecelerationRate, float hotSpeed)
@@ -129,6 +136,33 @@ namespace FPSStarter
             UpdateMovement();
 
             UpdateAnimation();
+        }
+
+        private void UpdateFootsteps()
+        {
+            Vector2 input = ReadMovementInput(Keyboard.current);
+
+            bool moving = input.sqrMagnitude > 0.01f;
+            bool grounded = IsGrounded;
+
+            if (!moving || !grounded || footstepAudio == null || footstepAudio.clip == null)
+            {
+                footstepAudio?.Stop();
+                footstepLoopTime = 0f;
+                return;
+            }
+
+            if (!footstepAudio.isPlaying)
+            {
+                footstepAudio.time = 0f;
+                footstepAudio.loop = false;
+                footstepAudio.Play();
+            }
+
+            if (footstepAudio.time >= 4f)
+            {
+                footstepAudio.time = 0f;
+            }
         }
 
         private void SetAnimState(bool moving, bool jumping)
@@ -255,6 +289,7 @@ namespace FPSStarter
             if ((collisions & CollisionFlags.Above) != 0 && verticalVelocity > 0f)
                 verticalVelocity = 0f;
             groundedSupport = CheckGrounded();
+            UpdateFootsteps();
         }
 
         private static Vector2 ReadMovementInput(Keyboard keyboard)
