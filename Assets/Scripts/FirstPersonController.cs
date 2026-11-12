@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace FPSStarter
 {
@@ -7,6 +8,9 @@ namespace FPSStarter
     [RequireComponent(typeof(CharacterController))]
     public sealed class FirstPersonController : MonoBehaviour
     {
+        Animator animator;
+        
+
         [Header("References")]
         [SerializeField] private Transform view;
         [SerializeField] private Transform holdPoint;
@@ -15,6 +19,7 @@ namespace FPSStarter
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
         [SerializeField, Min(0f)] private float jumpHeight = 1.35f;
         [SerializeField] private float gravity = -24f;
+        [SerializeField] private Animator playerAnimator;
 
         [Header("Room Mechanics")]
         [SerializeField, Range(0.05f, 1f)] private float iceSpeedMultiplier = 0.65f;
@@ -31,7 +36,8 @@ namespace FPSStarter
         [SerializeField, Range(0.01f, 5f)] private float mouseLookSensitivity = 0.2f;
         [SerializeField, Range(30f, 89f)] private float verticalLookLimit = 85f;
         [SerializeField, Min(0.01f)] private float gamepadLookSpeed = 140f;
-
+       
+        
         private CharacterController controller;
         private float verticalVelocity;
         private float pitch;
@@ -55,6 +61,7 @@ namespace FPSStarter
         public Transform HoldPoint => holdPoint;
         public RoomMechanic CurrentMechanic => currentMechanic;
         public RoomMechanicVolume CurrentRoom => activeRoomVolume;
+        private bool isWalking = false;
 
         /// <summary>Applies the Stage 2 movement tuning after the scene has loaded.</summary>
         public void ConfigureStage2Movement(float iceSpeed, float iceAccelerationRate, float iceDecelerationRate, float hotSpeed)
@@ -120,7 +127,28 @@ namespace FPSStarter
             // working even if the camera is assigned a frame later at startup.
             if (cursorLocked && view != null) UpdateLook();
             UpdateMovement();
+
+            UpdateAnimation();
         }
+
+        private void SetAnimState(bool moving, bool jumping)
+        {
+            playerAnimator.SetBool("IsJumping", jumping);
+            playerAnimator.SetBool("IsMoving", moving && !jumping);
+            playerAnimator.SetBool("IsIdle", !moving && !jumping);
+        }
+
+        private void UpdateAnimation()
+        {
+            if (playerAnimator == null) return;
+
+            Vector2 moveInput = ReadMovementInput(Keyboard.current);
+            bool isMoving = moveInput.sqrMagnitude > 0.01f;
+            bool inAir = !IsGrounded;
+
+            SetAnimState(isMoving, inAir);
+        }
+
 
         /// <summary>Called by room trigger volumes when this player enters them.</summary>
         public void EnterRoom(RoomMechanicVolume volume)
